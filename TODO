@@ -1,0 +1,24 @@
+Here are the basic ideas for this project
+
+- support for promises
+
+- the most basic promise is a memoized zero-argument function
+
+- provide container-based promises, which are simply the above with
+  methods allowing to detect whether the promise has been delivered,
+  and to perform a blocking delivery
+
+- provide a transparent proxy based promise, which are similar to the
+  above, but with no methods. Any attempt to "use" the proxy (member
+  access), will result in blocking delivery.
+
+- In addition, provide ispromise(p) isdelivered(p) and deliver(p)
+  functions which will work on both container and transparent proxy
+  promises.
+
+- create a multiprocessing-enabled facility for both types of promises
+
+- abstract promise delivery so that any underlying delivery mechanism
+  can be used with either container or transparent proxies
+
+- create an xmlrpc multicall which utilizes both types of promises
