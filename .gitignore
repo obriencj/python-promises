@@ -1,0 +1,12 @@
+build
+dist
+test
+tmp
+*#
+*~
+.#*
+*.pyc
+*.gz
+*.tar
+*.bak
+MANIFEST
