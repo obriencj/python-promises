@@ -22,7 +22,7 @@ transparent proxies, and other convoluted stuff that will make you
 wish someone smarter had worked on this.
 
 author: Christopher O'Brien  <obriencj@gmail.com>
-license: LGPL
+license: LGPL v.3
 
 """
 
