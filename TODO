@@ -1,12 +1,17 @@
 Here are the basic ideas for this project
 
-- support for promises
+- support for promises/futures
 
-- the most basic promise is a memoized zero-argument function
+- differ from the PEP-3148 http://www.python.org/dev/peps/pep-3148/ in
+  which promises are only write-once slots for a value, which need to
+  be written to by an outside actor. We're commingling the ideas of
+  promises and futures in this implementation.
+
+- the most basic promise is a memoized zero-argument (nullary) function
 
 - provide container-based promises, which are simply the above with
   methods allowing to detect whether the promise has been delivered,
-  and to perform a blocking delivery
+  and to perform a (possibly blocking) delivery
 
 - provide a transparent proxy based promise, which are similar to the
   above, but with no methods. Any attempt to "use" the proxy (member
@@ -22,3 +27,4 @@ Here are the basic ideas for this project
   can be used with either container or transparent proxies
 
 - create an xmlrpc multicall which utilizes both types of promises
+
