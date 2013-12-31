@@ -321,15 +321,7 @@ static int promise_init(PyProxyPromise *self,
   if (! PyArg_ParseTuple(args, "O", &work))
     return -1;
 
-  if(self->work) {
-    Py_DECREF(self->work);
-    self->work = NULL;
-  }
-
-  if(self->answer) {
-    Py_DECREF(self->answer);
-    self->answer = NULL;
-  }
+  promise_clear(self);
 
   if (PyCallable_Check(work)) {
     self->work = work;
