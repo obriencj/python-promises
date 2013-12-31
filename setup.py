@@ -39,7 +39,8 @@ ext = [ Extension("promises._proxy", ["src/proxy.c"]), ]
 setup( name = "promises",
        version = "1.0",
 
-       packages = [ "promises" ],
+       packages = [ "promises",
+                    "promices.xmlrpclib", ],
 
        package_dir = { "promises": "src" },
 
