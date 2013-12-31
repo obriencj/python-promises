@@ -61,25 +61,83 @@ class ContainerPromise(object):
         return self._answer
            
     def _deliver(self):
+        # in theory this could be overridden to change how delivery
+        # occurs, but it's probably better to use special workers
+        # instead.
         assert(self._work is not None)
-        work = self._work
+        self._answer = self._work()
         self._work = None
-        self._answer = work()
 
 
 def is_promise(obj):
+    """ True if obj is a promise (either a proxy or a container) """
+
     return (_proxy.is_proxy(obj) or
             isinstance(obj, ContainerPromise))
 
 
 def is_delivered(obj):
+    """ True if a promise has been delivered """
+
     return _proxy.is_proxy_delivered(obj) if _proxy.is_proxy(obj) \
         else obj.is_delivered()
 
 
 def deliver(obj):
+    """ attempts to deliver a promise """
+
     return _proxy.deliver_proxy(obj) if _proxy.is_proxy(obj) \
         else obj.deliver()
+
+
+class PromiseNotReady(Exception):
+    """ Raised when attempting to deliver on a promise whose
+    underlying delivery function hasn't been called (see
+    container_pair and proxy_pair) """
+    pass
+
+
+class PromiseAlreadyDelivered(Exception):
+    """ Raised when a paired promise's delivery function is called
+    more than once (see container_pair and proxy_pair) """
+    pass
+
+
+def _promise_pair(promise_type):
+    ptr = list()
+    
+    def promise_getter():
+        if not ptr:
+            raise PromiseNotReady()
+        else:
+            return ptr[0]
+
+    promise = promise_type(promise_getter)
+
+    def promise_setter(value):
+        if ptr:
+            raise PromiseAlreadyDelivered()
+        else:
+            ptr.append(value)
+            deliver(promise)
+
+    return (promise, promise_setter)
+
+
+def container_pair():
+
+    """ Returns a tuple of a new ContainerPromise and a unary function
+    to deliver a value into that promise """
+
+    return _promise_pair(ContainerPromise)
+
+
+def proxy_pair():
+
+    """ Returns a tuple of a new ProxyPromise and a unary function to
+    deliver a value into that promise """
+
+    return _promise_pair(ProxyPromise)
 
 
 #
