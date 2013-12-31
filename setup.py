@@ -40,7 +40,9 @@ setup( name = "promises",
        version = "1.0",
 
        packages = [ "promises",
-                    "promices.xmlrpclib", ],
+                    "promises.multithread",
+                    "promises.multiprocess",
+                    "promises.xmlrpclib", ],
 
        package_dir = { "promises": "src" },
 
@@ -53,7 +55,7 @@ setup( name = "promises",
        license = "GNU Lesser General Public License", 
        
        description = "Promises, container and transparent, with"
-       " multiprocessing support",
+       " threading and multiprocessing support",
        
        provides = [ "promises" ],
        requires = [],
