@@ -104,6 +104,12 @@ class PromiseAlreadyDelivered(Exception):
 
 
 def _promise_pair(promise_type):
+
+    """ This is the 'traditional' type of promise. It's a single-slot,
+    write-once value. I like mine better. But check it out, mine can
+    turn into the boring one with the greatest of ease! """
+
+    # our shared state! trololol closures
     ptr = list()
     
     def promise_getter():
