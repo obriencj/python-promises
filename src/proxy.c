@@ -51,7 +51,7 @@ static PyObject *proxy_promise_deliver(PyProxyPromise *proxy);
 
 #define DELIVERX(proxy, fail)						\
   {									\
-    if (PyProxyPromise_Check(proxy)) {					\
+    if (proxy && PyProxyPromise_Check(proxy)) {				\
       proxy = proxy_promise_deliver((PyProxyPromise *) proxy);		\
       if (! proxy) {							\
 	return (fail);							\
@@ -274,9 +274,15 @@ static int proxy_compare(PyObject *proxy, PyObject *val) {
 
 
 WRAP_UNARY(proxy_repr, PyObject_Repr)
-WRAP_TERNARY(proxy_call, PyEval_CallObjectWithKeywords)
 WRAP_UNARY(proxy_str, PyObject_Str)
 WRAP_BINARY(proxy_getattr, PyObject_GetAttr)
+
+
+static PyObject *proxy_call(PyObject *proxy,
+			    PyObject *args, PyObject *kwds) {
+  DELIVER(proxy);
+  return PyObject_Call(proxy, args, kwds);
+}
 
 
 static int proxy_setattr(PyObject *proxy,
