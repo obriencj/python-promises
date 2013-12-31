@@ -36,11 +36,11 @@ typedef struct _PyProxyPromise {
 } PyProxyPromise;
 
 
-PyTypeObject _PyProxyPromiseType;
+PyTypeObject PyProxyPromiseType;
 
 
 #define PyProxyPromise_Check(obj) \
-  (Py_TYPE(obj) == &_PyProxyPromiseType)
+  (Py_TYPE(obj) == &PyProxyPromiseType)
 
 
 PyObject *PyProxyPromise_IsDelivered(PyProxyPromise *proxy);
@@ -49,18 +49,18 @@ PyObject *PyProxyPromise_Deliver(PyProxyPromise *proxy);
 static PyObject *proxy_promise_deliver(PyProxyPromise *proxy);
 
 
-#define DELIVERX(proxy, fail)					\
-  if (PyProxyPromise_Check(proxy) &&				\
-      ! proxy_promise_deliver((PyProxyPromise *)proxy)) {	\
-    return (fail);						\
+#define DELIVERX(proxy, fail)						\
+  {									\
+    if (PyProxyPromise_Check(proxy)) {					\
+      proxy = proxy_promise_deliver((PyProxyPromise *) proxy);		\
+      if (! proxy) {							\
+	return (fail);							\
+      }									\
+    }									\
   }
 
 
-#define DELIVER(proxy)						\
-  if(PyProxyPromise_Check(proxy) &&				\
-     ! proxy_promise_deliver((PyProxyPromise *)proxy)) {	\
-    return NULL;						\
-  }
+#define DELIVER(proxy) DELIVERX(proxy, NULL)
 
 
 #define VALUE(o)						\
@@ -70,7 +70,7 @@ static PyObject *proxy_promise_deliver(PyProxyPromise *proxy);
 #define WRAP_UNARY(name, actual)	   \
   static PyObject *name(PyObject *proxy) { \
     DELIVER(proxy);			   \
-    return actual(VALUE(proxy));	   \
+    return actual(proxy);		   \
   }
 
 
@@ -78,7 +78,7 @@ static PyObject *proxy_promise_deliver(PyProxyPromise *proxy);
   static PyObject *name(PyObject *proxy, PyObject *a) { \
     DELIVER(proxy);					\
     DELIVER(a);						\
-    return actual(VALUE(proxy), a);			\
+    return actual(proxy, a);				\
   }
 
 
@@ -87,7 +87,7 @@ static PyObject *proxy_promise_deliver(PyProxyPromise *proxy);
     DELIVER(proxy);						     \
     DELIVER(a);							     \
     DELIVER(b);							     \
-    return actual(VALUE(proxy), VALUE(a), VALUE(b));		     \
+    return actual(proxy, a, b);					     \
   }
 
 
@@ -142,7 +142,7 @@ WRAP_UNARY(proxy_index, PyNumber_Index)
 
 static int proxy_nonzero(PyObject *proxy) {
   DELIVERX(proxy, -1);
-  return PyObject_IsTrue(VALUE(proxy));
+  return PyObject_IsTrue(proxy);
 }
 
 
@@ -191,14 +191,14 @@ static PyNumberMethods proxy_as_number = {
 
 static Py_ssize_t proxy_length(PyObject *proxy) {
   DELIVERX(proxy, -1);
-  return PyObject_Length(VALUE(proxy));
+  return PyObject_Length(proxy);
 }
 
 
 static PyObject *proxy_get_slice(PyObject *proxy,
 				 Py_ssize_t i, Py_ssize_t j) {
   DELIVER(proxy);
-  return PySequence_GetSlice(VALUE(proxy), i, j);
+  return PySequence_GetSlice(proxy, i, j);
 }
 
 
@@ -206,13 +206,13 @@ static int proxy_set_slice(PyObject *proxy,
 			   Py_ssize_t i, Py_ssize_t j,
 			   PyObject *val) {
   DELIVERX(proxy, -1);
-  return PySequence_SetSlice(VALUE(proxy), i, j, val);
+  return PySequence_SetSlice(proxy, i, j, val);
 }
 
 
 static int proxy_contains(PyObject *proxy, PyObject *val) {
   DELIVERX(proxy, -1);
-  return PySequence_Contains(VALUE(proxy), val);
+  return PySequence_Contains(proxy, val);
 }
 
 
@@ -235,9 +235,9 @@ static int proxy_setitem(PyObject *proxy, PyObject *key, PyObject *val) {
   DELIVERX(proxy, -1);
   DELIVERX(key, -1);
   if (val == NULL) {
-    return PyObject_DelItem(VALUE(proxy), VALUE(key));
+    return PyObject_DelItem(proxy, key);
   } else {
-    return PyObject_SetItem(VALUE(proxy), VALUE(key), val);
+    return PyObject_SetItem(proxy, key, val);
   }
 }
 
@@ -266,17 +266,10 @@ static int promise_clear(PyProxyPromise *proxy) {
 }
 
 
-static void promise_dealloc(PyProxyPromise *self) {
-  PyObject_GC_UnTrack(self);
-  promise_clear(self);
-  Py_TYPE(self)->tp_free(self);
-}
-
-
 static int proxy_compare(PyObject *proxy, PyObject *val) {
   DELIVERX(proxy, -1);
   DELIVERX(val, -1);
-  return PyObject_Compare(VALUE(proxy), VALUE(val));
+  return PyObject_Compare(proxy, val);
 }
 
 
@@ -289,14 +282,63 @@ WRAP_BINARY(proxy_getattr, PyObject_GetAttr)
 static int proxy_setattr(PyObject *proxy,
 			 PyObject *name, PyObject *val) {
   DELIVERX(proxy, -1);
-  return PyObject_SetAttr(VALUE(proxy), name, val);
+  return PyObject_SetAttr(proxy, name, val);
 }
 
 
-PyTypeObject _PyProxyPromiseType = {
+static void promise_dealloc(PyProxyPromise *self) {
+  promise_clear(self);
+  Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+
+static PyObject *promise_new(PyTypeObject *type,
+			     PyObject *args, PyObject *kwds) {
+  
+  PyProxyPromise *self;
+  
+  self = (PyProxyPromise *) type->tp_alloc(type, 0);
+  if (self != NULL) {
+    self->work = NULL;
+    self->answer = NULL;
+  }
+  
+  return (PyObject *) self;
+}
+
+
+static int promise_init(PyProxyPromise *self,
+			PyObject *args, PyObject *kwds) {
+
+  PyObject *work = NULL;
+
+  if (! PyArg_ParseTuple(args, "O", &work))
+    return -1;
+
+  if (! PyCallable_Check(work))
+    return -1;
+
+  if(self->work) {
+    Py_DECREF(self->work);
+    self->work = NULL;
+  }
+
+  if(self->answer) {
+    Py_DECREF(self->answer);
+    self->answer = NULL;
+  }
+  
+  Py_INCREF(work);
+  self->work = work;
+
+  return 0;
+}
+
+
+PyTypeObject PyProxyPromiseType = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
 
-  "proxypromise",
+  "promises.ProxyPromise",
   sizeof(PyProxyPromise),
   0,
 
@@ -316,7 +358,6 @@ PyTypeObject _PyProxyPromiseType = {
   .tp_setattro = (setattrofunc)proxy_setattr,
   .tp_as_buffer = NULL,
   .tp_flags = (Py_TPFLAGS_DEFAULT |
-	       Py_TPFLAGS_HAVE_GC |
 	       Py_TPFLAGS_CHECKTYPES),
   .tp_doc = NULL,
   .tp_traverse = NULL,
@@ -326,6 +367,9 @@ PyTypeObject _PyProxyPromiseType = {
   .tp_iter = (getiterfunc)proxy_iter,
   .tp_iternext = (iternextfunc)proxy_iternext,
   .tp_methods = proxy_methods,
+
+  .tp_new = promise_new,
+  .tp_init = (initproc)promise_init,
 };
 
 
@@ -337,11 +381,14 @@ static PyObject *proxy_promise_deliver(PyProxyPromise *proxy) {
   PyObject *work;
   PyObject *answer = NULL;
 
-  if(! proxy_promise_is_delivered(proxy)) {
+  if(proxy_promise_is_delivered(proxy)) {
+    answer = proxy->answer;
+
+  } else {
     work = proxy->work;
 
     if (PyCallable_Check(work)) {
-      answer = PyObject_Call(work, NULL, NULL);
+      answer = PyObject_CallObject(work, NULL);
 
       if (answer != NULL) {
 	proxy->work = NULL;
@@ -350,9 +397,10 @@ static PyObject *proxy_promise_deliver(PyProxyPromise *proxy) {
     } else{
       answer = work;
     }
+
+    proxy->answer = answer;
   }
 
-  proxy->answer = answer;
   return answer;
 }
 
@@ -377,21 +425,36 @@ PyObject *PyProxyPromise_Deliver(PyProxyPromise *proxy) {
 
 
 static PyObject *is_proxy(PyObject *module, PyObject *args) {
-  Py_RETURN_FALSE;
+  PyObject *obj = NULL;
+  
+  if (! PyArg_ParseTuple(args, "O", &obj))
+    return NULL;
+
+  if (PyProxyPromise_Check(obj)) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
 }
 
 
 static PyObject *is_proxy_delivered(PyObject *module, PyObject *args) {
-  //PyProxyPromise *proxy;
-  //return PyProxyPromise_IsDelivered(proxy);
-  Py_RETURN_FALSE;
+  PyProxyPromise *proxy = NULL;
+  
+  if (! PyArg_ParseTuple(args, "O!", &PyProxyPromiseType, &proxy))
+    return NULL;
+
+  return PyProxyPromise_IsDelivered(proxy);
 }
 
 
 static PyObject *deliver_proxy(PyObject *module, PyObject *args) {
-  //PyProxyPromise *proxy;
-  //return PyProxyPromise_Deliver(proxy);
-  Py_RETURN_NONE;
+  PyProxyPromise *proxy = NULL;
+  
+  if (! PyArg_ParseTuple(args, "O!", &PyProxyPromiseType, &proxy))
+    return NULL;
+
+  return PyProxyPromise_Deliver(proxy);
 }
 
 
@@ -412,13 +475,17 @@ static PyMethodDef methods[] = {
 
 PyMODINIT_FUNC init_proxy() {
   PyObject *mod;
-  //PyObject *proxytype;
+  PyObject *proxytype;
+
+  proxytype = (PyObject *) &PyProxyPromiseType;
+
+  if (PyType_Ready(&PyProxyPromiseType) < 0)
+    return;
 
   mod = Py_InitModule("promises._proxy", methods);
 
-  //proxytype = (PyObject *) &Proxy_Type;
-  //Py_INCREF(proxytype);
-  //PyModule_AddObject(mod, "ProxyType", proxytype);
+  Py_INCREF(proxytype);
+  PyModule_AddObject(mod, "ProxyPromise", proxytype);
 }
 
 

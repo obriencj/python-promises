@@ -28,6 +28,7 @@ license: LGPL v.3
 
 
 import _proxy
+from _proxy import ProxyPromise
 
 
 class ContainerPromise(object):
@@ -72,8 +73,8 @@ def is_promise(obj):
 
 
 def is_delivered(obj):
-    return ((_proxy.is_proxy(obj) and _proxy.is_proxy_delivered(obj)) or
-            obj.is_delivered())
+    return _proxy.is_proxy_delivered(obj) if _proxy.is_proxy(obj) \
+        else obj.is_delivered()
 
 
 def deliver(obj):
