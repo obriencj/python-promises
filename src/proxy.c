@@ -418,8 +418,9 @@ PyObject *PyProxyPromise_Deliver(PyProxyPromise *proxy) {
   PyObject *answer;
 
   answer = proxy_promise_deliver(proxy);
-
-  Py_INCREF(answer);
+  if (answer) {
+    Py_INCREF(answer);
+  }
   return answer;
 }
 
