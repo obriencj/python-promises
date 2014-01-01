@@ -23,7 +23,8 @@ license: LGPL v.3
 """
 
 
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
+from promises import ContainerPromise, ProxyPromise
 from xmlrpclib import MultiCall
 
 
@@ -66,14 +67,14 @@ def ProxyMultiCall(PromiseMultiCall):
     """ A MultiCall which will return ProxyPromises """
 
     def __promise__(self, work):
-        return promises.ProxyPromise(work)
+        return ProxyPromise(work)
 
 
 def ContainerMultiCall(PromiseMultiCall):
     """ A MultiCall which will return ContainerPromises """
 
     def __promise__(self, work):
-        return promises.ContainerPromise(work)
+        return ContainerPromise(work)
 
 
 #
