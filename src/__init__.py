@@ -143,16 +143,34 @@ def _settable_promise(promise_type):
 
 def settable_container():
 
-    """ Returns a tuple of a new ContainerPromise and a unary function
-    to deliver a value into that promise """
+    """ Returns a tuple of a new ContainerPromise, a unary function to
+    deliver a value into that promise, and a ternary function to feed
+    an exception to the promise.
+
+    eg:
+    >>> promise,setter,seterr = settable_container()
+    >>> setter(5)
+    >>> promise.deliver()
+    5
+
+    """
 
     return _settable_promise(ContainerPromise)
 
 
 def settable_proxy():
 
-    """ Returns a tuple of a new ProxyPromise and a unary function to
-    deliver a value into that promise """
+    """ Returns a tuple of a new ProxyPromise, a unary function to deliver
+    a value into that promise, and a ternary function to feed an
+    exception to the promise.
+
+    eg:
+    >>> promise,setter,seterr = settable_proxy()
+    >>> setter(5)
+    >>> promise
+    5
+
+    """
 
     return _settable_promise(ProxyPromise)
 
