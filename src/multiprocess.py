@@ -46,29 +46,19 @@ class Promising(object):
         return self
 
     def __exit__(self, exc_type, _exc_val, _exc_tb):
-        # block until the queue is cleared up and all our promises
-        # have been delivered
-
-        if (exc_type is None):
-            self.deliver()
-        else:
-            self.terminate()
         return (exc_type is None)
 
     def _spin_up(self):
         if not self.__pool:
-            self.__pool = Pool(self.__processes)
+            self.__pool = Pool(processes=self.__processes)
 
     def promise(self, work):
         """ queue up a promise to be completed """
 
         self._spin_up()
         
-        result = None
-        promise = self.__promise__(lambda: result.get())
         result = self.__pool.apply_async(work, [], {})
-
-        return promise
+        return self.__promise__(result.get)
 
     def terminate(self):
         """ breaks all the remaining promises """
