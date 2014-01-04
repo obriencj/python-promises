@@ -24,11 +24,12 @@ license: LGPL v.3
 
 
 from abc import ABCMeta, abstractmethod
+from functools import partial
 from promises import ContainerPromise, ProxyPromise
 from xmlrpclib import MultiCall
 
 
-class PromiseMultiCall(MultiCall):
+class PromiseMultiCall(object):
 
     """ An alternative to xmlrpclib.MultiCall which allows the
     programmer to receive promises for the calls as they are written,
@@ -44,23 +45,81 @@ class PromiseMultiCall(MultiCall):
         specified work """
         return None
 
-    def __init__(self, *args, **kwds):
-        super(PromiseMultiCall, self).__init__(self, *args, **kwds)
+    def __init__(self, server):
+        self.server = server
+        self.__mc = None
+        self.__counter = 0
+
+    def __enter__(self):
+        """ The managed interface handler for this is just fluff, so
+        that you can choose to use the 'with' keyword to denote when
+        you're using the multicall """
+        return self
+
+    def __exit__(self, exc_type, _exc_val, _exc_tb):
+        return (exc_type is None)
+
+    def deliver(self):
+        if self.__mc is not None:
+            self.__mc()
+            self.__mc  = None
+            self.__counter = 0
+
+    def __deliver_on(self, mc, index):
+        # if the promise is against the current MC, then we need to
+        # deliver on it and clear ourselves to create a new
+        # one. Otherwise, use the memoized answers for the already
+        # delivered MC. Then we return the result at the given index.
+        if mc is self.__mc:
+            self.deliver()
+
+        # a great feature of this is that the delivery or access of
+        # the promise will also raise the underlying fault if there
+        # happened to be one
+        return mc.deliver()[index]
+
+    def __getattr__(self, name):
+        def promisary(*args, **kwds):
+            # make sure we have an underlying memoized multicall
+            multicall = self.__mc
+            if multicall is None:
+                multicall = MemoizedMultiCall(self.server)
+                self.__mc = multicall
+
+            # enqueue the call in the multicall
+            getattr(multicall, name)(*args, **kwds)
+
+            # this is how we'll relate back to our answers from the
+            # current multicall. We wait to capture and increment this
+            # value until we're certain that we've been used.
+            index = self.__counter
+            self.__counter += 1
+            
+            # promise to get the answer out of this exact multicall's
+            # collection of answers
+            work = partial(self.__deliver_on, multicall, index)
+
+            # the resulting promise will keep a reference to the
+            # particular memoized multicall, as that is where it will
+            # want to get its answer from.
+            return self.__promise__(work)
+
+        promisary.func_name = name
+        return promisary
+
+
+class MemoizedMultiCall(MultiCall):
+    """ A Memoized MultiCall, will only perform the underlying xmlrpc
+    call once, remembers the answers for all further requests """
+
+    def __init__(self, server):
+        MultiCall.__init__(self, server)
         self.__answers = None
 
     def __call__(self):
         if self.__answers is None:
-            answer = tuple(super(PromiseMultiCall, self).__call__(self))
-            self.__answers = answers
+            self.__answers = MultiCall.__call__(self)
         return self.__answers
-
-    def __getattr__(self, name):
-        index = len(self.__call_list)
-        fun = super(PromiseMultiCall, self).__getattr__(self, name)
-        def promisary(*args, **kwds):
-            fun(*args, **kwds)
-            return self.__promise__(lambda: self()[index])
-        return promisary
 
 
 def ProxyMultiCall(PromiseMultiCall):

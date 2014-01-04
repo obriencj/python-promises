@@ -117,7 +117,7 @@ def _settable_promise(promise_type):
         if ptr:
             return ptr[0]
         elif exc:
-            raise exc[0], exc[1], exc[2]
+            raise exc[0][0], exc[0][1], exc[0][2]
         else:
             raise PromiseNotReady()
 
@@ -127,7 +127,8 @@ def _settable_promise(promise_type):
         if ptr:
             raise PromiseAlreadyDelivered()
         else:
-            exc.clear()
+            if exc:
+                exc.pop()
             ptr.append(value)
             deliver(promise)
 
@@ -135,8 +136,9 @@ def _settable_promise(promise_type):
         if ptr:
             raise PromiseAlreadyDelivered()
         else:
-            exc.clear()
-            exc.extend((exc_type, exc_val, exc_tb))
+            if exc:
+                exc.pop()
+            exc.append((exc_type, exc_val, exc_tb))
 
     return (promise, promise_setter, promise_exc)
 
@@ -188,7 +190,7 @@ def _settable_blocking_promise(promise_type):
         if ptr:
             return ptr[0]
         elif exc:
-            raise exc[0], exc[1], exc[2]
+            raise exc[0][0], exc[0][1], exc[0][2]
         else:
             raise PromiseNotReady()
 
@@ -198,7 +200,8 @@ def _settable_blocking_promise(promise_type):
         if ptr:
             raise PromiseAlreadyDelivered()
         else:
-            exc.clear()
+            if exc:
+                exc.pop()
             ptr.append(value)
             event.set()
             deliver(promise)
@@ -207,8 +210,9 @@ def _settable_blocking_promise(promise_type):
         if ptr:
             raise PromiseAlreadyDelivered()
         else:
-            exc.clear()
-            exc.extend((exc_type, exc_val, exc_tb))
+            if exc:
+                exc.pop()
+            exc.append((exc_type, exc_val, exc_tb))
 
     return (promise, promise_setter, promise_exc)
 
