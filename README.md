@@ -4,8 +4,11 @@
 A python module providing container and proxy promises, supporting
 linear and multi-processing deliver.
 
-See the TODO for more information. I'm too lazy to write more of a
-README on New Year's Eve.
+I really recommend that you don't use this, so long as this warning
+exists in the README. I'm just playing around with the features. Also
+I wrote a lot of this while sick with the Flu.
+
+See TODO for more information on where this is going.
 
 * [python-promises on GitHub](https://github.com/obriencj/python-promises/)
 
