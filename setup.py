@@ -37,7 +37,7 @@ ext = [ Extension("promises._proxy", ["src/proxy.c"]), ]
 
 
 setup( name = "promises",
-       version = "1.0.0",
+       version = "0.9.0",
 
        packages = [ "promises" ],
 
