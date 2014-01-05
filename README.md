@@ -1,26 +1,84 @@
 
 # Overview of python-promises
 
-A python module providing container and proxy promises, supporting
-linear and multi-processing deliver.
+A [Python] module providing container and proxy promises, supporting
+linear and multi-processing delivery.
 
-I really recommend that you don't use this, so long as this warning
-exists in the README. I'm just playing around with the features. Also
-I wrote a lot of this while sick with the Flu.
+This is not at all like [PEP-3148], don't be confused. I felt that
+this PEP was too much Java and too little Python, so I decided to play
+with my own take on the underlying concept. A number of other people
+have also had a go at it, see the Related section below for links to
+their work.
 
-See TODO for more information on where this is going.
+At this stage this project is just a rough draft. I've set the version
+to 0.9.0 and am not promising any kind of API stability until 1.0.0 at
+which point I'll tag it and cut a release. Feel free to play, fork, or
+experiment.
 
-* [python-promises on GitHub](https://github.com/obriencj/python-promises/)
+* [python-promises on GitHub][github]
+* python-promises not on PyPI until v1.0.0
+
+[python]: http://python.org "Python"
+
+[pep-3148]: http://www.python.org/dev/peps/pep-3148
+"PEP-3148 - futures - execute computations asynchronously"
+
+[github]: https://github.com/obriencj/python-promises/
+"python-promises on GitHub"
+
+
+## These Python Promises
+
+So let's start simply, assuming that while everyone is already
+familiar with the concept of a [promise][promise-noun] and how it
+affects them socially, they may not be clear on how the concept
+relates to programming and [computer science][cs-promise].
+
+It's very likely that you're using something very akin to a promise in
+your code, and just not considering it as such. At the most basic
+level, one could conceive of a promise as nothing more than say, a
+memoized nullary function. One may have thought, "this function
+involves network access, so let's not call it unless we absolutely
+need to load this data." The placeholder for the value is the promise,
+as is the code and any data that would be needed to deliver on it.
+
+There's no free computation involved. To get the value from a promise,
+the work still has to be done and delivered. But perhaps it can happen
+in another thread or process while you're working on collating ten
+thousand similar pieces.
+
+Some languages are built on the concept of the promise and lazy
+evaluation. Others offer it as an option, but at the syntax level. And
+still others at least provide an OO representation of the concept in
+some library. Python doesn't, by default, have any of these.
+
+In this library, the promise isn't necessarily that the passed work
+will be computed. The promise being made is that the answer to such
+computation will be delivered *if asked for*. As such, if no code ever
+attempts to retrieve a promised value, it's perfectly acceptable for
+there to be no attempt to execute the underlying work. Put another
+way, promises are not the same as tasks, though a cursory examination
+may reveal similarities and side-effects are certainly not banned from
+a promise's work load.
+
+[promise-noun]: http://en.wiktionary.org/wiki/promise#Noun
+
+[cs-promise]: http://en.wikipedia.org/wiki/Futures_and_promises
+"Futures and Promises"
 
 
 ## Requirements
 
-* [Python](http://python.org) 2.6 or later (no support for Python 3)
+* [Python] 2.6 or later (no support for Python 3)
 
 
 ## Install
 
-This module uses distutils, so simply run `python setup.py install`
+This module uses distutils, so simply run
+
+```
+python setup.py install
+```
 
 
 ## Contact
