@@ -30,6 +30,10 @@ from promises import ContainerPromise, ProxyPromise
 
 class Promising(object):
     
+    """ A way to provide multiple promises which will be delivered in
+    a separate process. See ContainerPromising or ProxyPromising for
+    concrete implementations. """
+
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -43,25 +47,30 @@ class Promising(object):
         self.__pool = None
         
     def __enter__(self):
+        """ Though Promising offers the management interface, it
+        doesn't really use it in any way. I consider it a beneficial
+        marker that we're operating against multiple processes though."""
         return self
 
     def __exit__(self, exc_type, _exc_val, _exc_tb):
         return (exc_type is None)
 
-    def _spin_up(self):
+    def promise(self, work):
+        """ queue up work as a promise, which may be delievered in a
+        separate process. """
+
         if not self.__pool:
             self.__pool = Pool(processes=self.__processes)
-
-    def promise(self, work):
-        """ queue up a promise to be completed """
-
-        self._spin_up()
         
+        # yay for Pool.apply_async, doing all the heavy lifting for
+        # us, so we don't need to correlate tasks or deal with Queues
+        # ourselves. However, this does NOT handle KeyboardInterrupt
+        # well at all... I may need to look at catching that myself.
         result = self.__pool.apply_async(work, [], {})
         return self.__promise__(result.get)
 
     def terminate(self):
-        """ breaks all the remaining promises """
+        """ breaks all the remaining undelivered promises """
         self.__pool.terminate()
         self.__pool = None
 
@@ -71,15 +80,25 @@ class Promising(object):
         self.__pool = None
 
     def is_delivered(self):
+        # TODO better to ask if the pool is empty, check on this
+        # later.
         return (self.__pool is None)
 
 
 class ContainerPromising(Promising):
+
+    """ Creates container promises, which will deliver in a separate
+    process """
+
     def __promise__(self, work):
         return ContainerPromise(work)
 
 
 class ProxyPromising(Promising):
+
+    """ Creates transparent proxy promises, which will deliver in a
+    separate process """
+
     def __promise__(self, work):
         return ProxyPromise(work)
 
