@@ -2,13 +2,12 @@
 # Overview of python-promises
 
 A [Python] module providing container and proxy promises, supporting
-linear and multi-processing delivery.
+delayed linear and multi-processing delivery.
 
-This is not at all like [PEP-3148], don't be confused. I felt that
-this PEP was too much Java and too little Python, so I decided to play
-with my own take on the underlying concept. A number of other people
-have also had a go at it, see the Related section below for links to
-their work.
+This is dissimilar to [PEP-3148], where the focus is on simplified
+parallel execution. We focus more on the concept of a promise as a
+placeholder to a value which may not have been delivered yet. Futures
+as described could be used to deliver on promises, perhaps.
 
 At this stage this project is just a rough draft. I've set the version
 to 0.9.0 and am not promising any kind of API stability until 1.0.0 at
@@ -28,6 +27,9 @@ experiment.
 
 
 ## These Python Promises
+
+*This is very much a work in progress. I am still working out how much
+ I want to explain, and in what tone.*
 
 So let's start simply, assuming that while everyone is already
 familiar with the concept of a [promise][promise-noun] and how it
