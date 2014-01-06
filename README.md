@@ -29,7 +29,7 @@ experiment.
 ## These Python Promises
 
 *This is very much a work in progress. I am still working out how much
- I want to explain, and in what tone.*
+ I want to explain, in what order, etc.*
 
 So let's start simply, assuming that while everyone is already
 familiar with the concept of a [promise][promise-noun] and how it
