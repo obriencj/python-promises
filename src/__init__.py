@@ -29,6 +29,7 @@ license: LGPL v.3
 
 import _proxy
 from _proxy import ProxyPromise
+from threading import Event
 
 
 class ContainerPromise(object):
@@ -65,6 +66,10 @@ class ContainerPromise(object):
         # occurs, but it's probably better to use special workers
         # instead.
         assert(self._work is not None)
+
+        # note that if the work raised an exception, we won't consider
+        # ourselves as delivered, meaning we can attempt delivery
+        # again later. This is a feature!
         self._answer = self._work()
         self._work = None
 
@@ -103,7 +108,7 @@ class PromiseAlreadyDelivered(Exception):
     pass
 
 
-def _settable_promise(promise_type):
+def _settable_promise(promise_type, blocking=False):
 
     """ This is the 'traditional' type of promise. It's a single-slot,
     write-once value. I like mine better. But check it out, mine can
@@ -112,38 +117,48 @@ def _settable_promise(promise_type):
     # our shared state! trololol closures
     ptr = list()
     exc = list()
+    event = Event() if blocking else None
     
+    # for getting a value to deliver to the promise, or for raising an
+    # exception if one was set. This is what will be called by deliver
     def promise_getter():
+        if event:
+            event.wait()
         if ptr:
             return ptr[0]
         elif exc:
-            raise exc[0][0], exc[0][1], exc[0][2]
+            if event:
+                event.clear()
+            raise exc[0], exc[1], exc[2]
         else:
             raise PromiseNotReady()
 
     promise = promise_type(promise_getter)
 
+    # for setting the promise's value.
     def promise_setter(value):
         if ptr:
             raise PromiseAlreadyDelivered()
         else:
-            if exc:
-                exc.pop()
-            ptr.append(value)
+            del exc[:]
+            ptr[:] = (value,)
+            if event:
+                event.set()
             deliver(promise)
 
-    def promise_exc(exc_type, exc_val, exc_tb):
+    # for setting the promise's exception
+    def promise_setexc(exc_type, exc_val, exc_tb):
         if ptr:
             raise PromiseAlreadyDelivered()
         else:
-            if exc:
-                exc.pop()
-            exc.append((exc_type, exc_val, exc_tb))
+            exc[:] = exc_type, exc_val, exc_tb
+            if event:
+                event.set()
 
-    return (promise, promise_setter, promise_exc)
+    return (promise, promise_setter, promise_setexc)
 
 
-def settable_container():
+def settable_container(blocking=False):
 
     """ Returns a tuple of a new ContainerPromise, a unary function to
     deliver a value into that promise, and a ternary function to feed
@@ -157,10 +172,10 @@ def settable_container():
 
     """
 
-    return _settable_promise(ContainerPromise)
+    return _settable_promise(ContainerPromise, blocking=blocking)
 
 
-def settable_proxy():
+def settable_proxy(blocking=False):
 
     """ Returns a tuple of a new ProxyPromise, a unary function to deliver
     a value into that promise, and a ternary function to feed an
@@ -174,55 +189,7 @@ def settable_proxy():
 
     """
 
-    return _settable_promise(ProxyPromise)
-
-
-def _settable_blocking_promise(promise_type):
-    
-    from threading import Event
-
-    ptr = list()
-    exc = list()
-    event = Event()
-
-    def promise_getter():
-        event.wait()
-        if ptr:
-            return ptr[0]
-        elif exc:
-            raise exc[0][0], exc[0][1], exc[0][2]
-        else:
-            raise PromiseNotReady()
-
-    promise = promise_type(promise_getter)
-
-    def promise_setter(value):
-        if ptr:
-            raise PromiseAlreadyDelivered()
-        else:
-            if exc:
-                exc.pop()
-            ptr.append(value)
-            event.set()
-            deliver(promise)
-    
-    def promise_exc(exc_type, exc_val, exc_tb):
-        if ptr:
-            raise PromiseAlreadyDelivered()
-        else:
-            if exc:
-                exc.pop()
-            exc.append((exc_type, exc_val, exc_tb))
-
-    return (promise, promise_setter, promise_exc)
-
-
-def settable_blocking_container():
-    return _settable_blocking_promise(ContainerPromise)
-
-
-def settable_blocking_proxy():
-    return _settable_blocking_promise(ProxyPromise)
+    return _settable_promise(ProxyPromise, blocking=blocking)
 
 
 #
