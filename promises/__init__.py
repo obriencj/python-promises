@@ -27,13 +27,13 @@ license: LGPL v.3
 """
 
 
-import _proxy
 from _proxy import ProxyPromise
+from _proxy import is_proxy, is_proxy_delivered, deliver_proxy
 from threading import Event
 
 
 class ContainerPromise(object):
-    
+
     """ Simplest promise mechanism. Will invoke a work function
     exactly once, and deliver the result as many times as
     necessary. """
@@ -50,48 +50,45 @@ class ContainerPromise(object):
         self._work = None
         self._answer = None
 
-    def is_promise(self):
-        return True
-
     def is_delivered(self):
         return self._work is None
 
     def deliver(self):
-        if self._work is not None:
-            self._deliver()
-        return self._answer
-           
-    def _deliver(self):
         # in theory this could be overridden to change how delivery
         # occurs, but it's probably better to use special workers
         # instead.
-        assert(self._work is not None)
 
-        # note that if the work raised an exception, we won't consider
-        # ourselves as delivered, meaning we can attempt delivery
-        # again later. This is a feature!
-        self._answer = self._work()
-        self._work = None
+        work = self._work
+
+        if work is not None:
+            # note that if the work raised an exception, we won't
+            # consider ourselves as delivered, meaning we can attempt
+            # delivery again later. This is a feature!
+            self._answer = work()
+            self._work = None
+
+        return self._answer
 
 
 def is_promise(obj):
     """ True if obj is a promise (either a proxy or a container) """
 
-    return (_proxy.is_proxy(obj) or
-            isinstance(obj, ContainerPromise))
+    return (is_proxy(obj) or \
+                (hasattr(obj, "is_delivered") and
+                 hasattr(obj, "deliver")))
 
 
 def is_delivered(obj):
     """ True if a promise has been delivered """
 
-    return _proxy.is_proxy_delivered(obj) if _proxy.is_proxy(obj) \
+    return is_proxy_delivered(obj) if is_proxy(obj) \
         else obj.is_delivered()
 
 
 def deliver(obj):
     """ attempts to deliver a promise """
 
-    return _proxy.deliver_proxy(obj) if _proxy.is_proxy(obj) \
+    return deliver_proxy(obj) if is_proxy(obj) \
         else obj.deliver()
 
 
@@ -128,7 +125,7 @@ def _settable_promise(promise_type, blocking=False):
     ptr = list()
     exc = list()
     event = Event() if blocking else None
-    
+
     # for getting a value to deliver to the promise, or for raising an
     # exception if one was set. This is what will be called by deliver
     def promise_getter():
