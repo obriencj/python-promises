@@ -32,15 +32,13 @@ license: LGPL v.3
 from setuptools import setup, Extension
 
 
-ext = [ Extension("promises._proxy", ["src/proxy.c"]), ]
+ext = [ Extension("promises._proxy", ["promises/proxy.c"]), ]
 
 
 setup( name = "promises",
        version = "0.9.0",
 
        packages = [ "promises", ],
-
-       package_dir = { "promises": "src", },
 
        ext_modules = ext,
 
