@@ -95,6 +95,16 @@ def deliver(obj):
         else obj.deliver()
 
 
+def container(work):
+    """ creates a new container promise to find an answer for work """
+    return ContainerPromise(work)
+
+
+def proxy(work):
+    """ creates a new proxy promise to find an answer for work """
+    return ProxyPromise(work)
+
+
 class PromiseNotReady(Exception):
     """ Raised when attempting to deliver on a promise whose
     underlying delivery function hasn't been called (see
