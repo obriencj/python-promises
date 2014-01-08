@@ -30,32 +30,84 @@ from promises import *
 
 class TestContainerPromise(unittest.TestCase):
 
-    def testFoo(self):
-        
+    def test_settable(self):
         promise, setter, seterr = settable_container()
+
         assert(is_promise(promise))
         assert(not is_delivered(promise))
 
         val = { "testval": True, "a": 5, "b": tuple() }
         setter(val)
+
+        assert(is_delivered(promise))
+        assert(deliver(promise) == val)
+
+
+    def test_callable_int(self):
+        promise = ContainerPromise(lambda: 5)
+
+        assert(is_promise(promise))
+        assert(not is_delivered(promise))
+
+        x = deliver(promise) + 1
+        assert(is_delivered(promise))
+        assert(deliver(promise) == 5)
+        assert(x == 6)
+
+        
+    def test_non_callable_int(self):
+        promise = ContainerPromise(5)
+
+        assert(is_promise(promise))
         assert(is_delivered(promise))
 
-        assert(deliver(promise) == val)
+        x = deliver(promise) + 1
+        assert(is_delivered(promise))
+        assert(deliver(promise) == 5)
+        assert(x == 6)
 
 
 class TestProxyPromise(unittest.TestCase):
 
     def test_settable(self):
-
         promise, setter, seterr = settable_proxy()
+
         assert(is_promise(promise))
         assert(not is_delivered(promise))
 
         val = { "testval": True, "a": 5, "b": tuple() }
         setter(val)
+
+        assert(is_delivered(promise))
+        assert(promise == val)
+
+
+    def test_callable_int(self):
+        promise = ProxyPromise(lambda: 5)
+
+        assert(is_promise(promise))
+        assert(not is_delivered(promise))
+
+        x = promise + 1
+
+        assert(is_delivered(promise))
+        assert(deliver(promise) == 5)
+        assert(promise == 5)
+        assert(x == 6)
+
+        
+    def test_non_callable_int(self):
+        promise = ProxyPromise(5)
+
+        assert(is_promise(promise))
         assert(is_delivered(promise))
 
-        assert(promise == val)
+        x = promise + 1
+
+        assert(is_delivered(promise))
+        assert(deliver(promise) == 5)
+        assert(promise == 5)
+        assert(x == 6)
 
 
 #

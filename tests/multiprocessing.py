@@ -27,15 +27,11 @@ import unittest
 
 
 class TestContainerMultiprocess(unittest.TestCase):
-
-    def testFoo(self):
-        pass
+    pass
 
 
 class TestProxyMultiprocess(unittest.TestCase):
-
-    def testFoo(self):
-        pass
+    pass
 
 
 #
