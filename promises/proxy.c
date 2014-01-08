@@ -249,6 +249,13 @@ static PyMappingMethods proxy_as_mapping = {
 };
 
 
+static PyObject *proxy_richcompare(PyObject *proxy, PyObject *comp, int op) {
+  DELIVER(proxy);
+  DELIVER(comp);
+  return PyObject_RichCompare(proxy, comp, op);
+}
+
+
 WRAP_UNARY(proxy_iter, PyObject_GetIter)
 WRAP_UNARY(proxy_iternext, PyIter_Next)
 
@@ -263,6 +270,12 @@ static int promise_clear(PyProxyPromise *proxy) {
     proxy->answer = NULL;
   }
   return 0;
+}
+
+
+static long proxy_hash(PyObject *proxy) {
+  DELIVERX(proxy, -1);
+  return PyObject_Hash(proxy);
 }
 
 
@@ -352,7 +365,7 @@ PyTypeObject PyProxyPromiseType = {
   .tp_as_number = &proxy_as_number,
   .tp_as_sequence = &proxy_as_sequence,
   .tp_as_mapping = &proxy_as_mapping,
-  .tp_hash = NULL,
+  .tp_hash = proxy_hash,
   .tp_call = proxy_call,
   .tp_str = proxy_str,
   .tp_getattro = proxy_getattr,
@@ -363,7 +376,7 @@ PyTypeObject PyProxyPromiseType = {
   .tp_doc = NULL,
   .tp_traverse = NULL,
   .tp_clear = (inquiry)promise_clear,
-  .tp_richcompare = NULL,
+  .tp_richcompare = proxy_richcompare,
   .tp_weaklistoffset = 0,
   .tp_iter = (getiterfunc)proxy_iter,
   .tp_iternext = (iternextfunc)proxy_iternext,
