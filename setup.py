@@ -29,8 +29,7 @@ license: LGPL v.3
 """
 
 
-from distutils.core import setup
-from distutils.extension import Extension
+from setuptools import setup, Extension
 
 
 ext = [ Extension("promises._proxy", ["src/proxy.c"]), ]
@@ -39,11 +38,13 @@ ext = [ Extension("promises._proxy", ["src/proxy.c"]), ]
 setup( name = "promises",
        version = "0.9.0",
 
-       packages = [ "promises" ],
+       packages = [ "promises", ],
 
-       package_dir = { "promises": "src" },
+       package_dir = { "promises": "src", },
 
        ext_modules = ext,
+
+       test_suite = "tests",
 
        # PyPI information
        author = "Christopher O'Brien",

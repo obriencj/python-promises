@@ -9,3 +9,5 @@ tmp
 *.tar
 *.bak
 MANIFEST
+*.so
+*.egg-info
