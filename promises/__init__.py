@@ -34,12 +34,21 @@ from threading import Event
 
 class ContainerPromise(object):
 
-    """ Simplest promise mechanism. Will invoke a work function
-    exactly once, and deliver the result as many times as
-    necessary. """
+    """ Simple promise mechanism. Acts as a container to the promised
+    work until delivered, and then acts as a container to the answer
+    from then on. Will invoke the promised work function exactly once,
+    but can deliver the answer multiple times.
+    """
 
     def __init__(self, work):
+        """ promises to provide the answer from calling work. work
+        must be either a nullary (zero-argument) callable, or a
+        non-callable value. If work is non-callable, then this promise
+        is considered immediately delivered, and the work value
+        becomes the answer. """
+
         if callable(work):
+            # TODO: check work arity. Must be nullary.
             self._work = work
             self._answer = None
         else:
@@ -51,9 +60,17 @@ class ContainerPromise(object):
         self._answer = None
 
     def is_delivered(self):
+        """ True if the promised work has been called and an answer
+        has been recorded. """
+
         return self._work is None
 
     def deliver(self):
+        """ Deliver on promised work. Will only execute the work if an
+        answer has not already been found. If an exception is raised
+        during the execution of work, it will be cascade up from here
+        as well. Returns the answer to the work once known. """
+
         # in theory this could be overridden to change how delivery
         # occurs, but it's probably better to use special workers
         # instead.
@@ -86,7 +103,8 @@ def is_delivered(obj):
 
 
 def deliver(obj):
-    """ attempts to deliver a promise """
+    """ attempts to deliver on a promise, and returns the resulting
+    value. """
 
     return deliver_proxy(obj) if is_proxy(obj) \
         else obj.deliver()
@@ -154,7 +172,7 @@ def _settable_promise(promise_type, blocking=False):
             deliver(promise)
 
     # for setting the promise's exception
-    def promise_setexc(exc_type, exc_val, exc_tb):
+    def promise_seterr(exc_type, exc_val, exc_tb):
         if ptr:
             raise PromiseAlreadyDelivered()
         else:
@@ -162,7 +180,7 @@ def _settable_promise(promise_type, blocking=False):
             if event:
                 event.set()
 
-    return (promise, promise_setter, promise_setexc)
+    return (promise, promise_setter, promise_seterr)
 
 
 def settable_container(blocking=False):
@@ -171,7 +189,11 @@ def settable_container(blocking=False):
     deliver a value into that promise, and a ternary function to feed
     an exception to the promise.
 
-    eg:
+    If blocking is set to True, then any attempt to deliver on the
+    promise will block until/unless a value or exception has been set
+    via the setter or seterr functions.
+
+    example:
     >>> promise,setter,seterr = settable_container()
     >>> setter(5)
     >>> promise.deliver()
@@ -188,7 +210,12 @@ def settable_proxy(blocking=False):
     a value into that promise, and a ternary function to feed an
     exception to the promise.
 
-    eg:
+    If blocking is set to True, then any attempt to deliver on the
+    promise (including accessing its members) will block until/unless
+    a value or exception has been set via the setter or seterr
+    functions.
+
+    example:
     >>> promise,setter,seterr = settable_proxy()
     >>> setter(5)
     >>> promise
