@@ -23,14 +23,43 @@ license: LGPL v.3
 """
 
 
+import sys
 import unittest
 
 from promises import *
 
 
+def assert_called_once(work):
+    """ helps assert that work is only called once """
+
+    called = [False]
+    def do_work_once():
+        assert(called[0] is False)
+        called[0] = True
+        return work()
+    return do_work_once
+
+
+def create_exc_tb(exception=None):
+    """ generate an exception info triplet """
+
+    if exception is None:
+        exception = Exception("dummy exception")
+
+    try:
+        raise exception
+    except Exception, e:
+        return sys.exc_info()
+
+
 class TestContainerPromise(unittest.TestCase):
 
+    """ tests for the ContainerPromise class """
+
+
     def test_settable(self):
+        """ setter from settable_container delivers """
+
         promise, setter, seterr = settable_container()
 
         assert(is_promise(promise))
@@ -43,8 +72,43 @@ class TestContainerPromise(unittest.TestCase):
         assert(deliver(promise) == val)
 
 
+    def test_settable_err(self):
+        """ seterr from settable_container causes deliver to raise """
+
+        promise, setter, seterr = settable_container()
+        
+        assert(is_promise(promise))
+        assert(not is_delivered(promise))
+
+        seterr(*create_exc_tb(Exception("test_settable_err")))
+        
+        try:
+            deliver(promise)
+        except Exception, e:
+            pass
+        else:
+            # deliver had darn well better raise that exception
+            assert(False)
+
+        setter(8)
+        assert(is_delivered(promise))
+        assert(deliver(promise) == 8)
+
+
+    def test_memoized(self):
+        """ promised work is only executed once. """
+
+        work = assert_called_once(lambda: "Hello World")
+        promise = container(work)
+        
+        assert(deliver(promise) == "Hello World")
+        assert(deliver(promise) == "Hello World")
+        
+
     def test_callable_int(self):
-        promise = ContainerPromise(lambda: 5)
+        """ callable work returning an int """
+
+        promise = container(lambda: 5)
 
         assert(is_promise(promise))
         assert(not is_delivered(promise))
@@ -56,7 +120,9 @@ class TestContainerPromise(unittest.TestCase):
 
         
     def test_non_callable_int(self):
-        promise = ContainerPromise(5)
+        """ int as promised work delivers immediately """
+
+        promise = container(5)
 
         assert(is_promise(promise))
         assert(is_delivered(promise))
@@ -69,7 +135,22 @@ class TestContainerPromise(unittest.TestCase):
 
 class TestProxyPromise(unittest.TestCase):
 
+    """ tests for the ProxyPromise class """
+
+
+    def test_memoized(self):
+        """ promised work is only executed once """
+
+        work = assert_called_once(lambda: "Hello World")
+        promise = proxy(work)
+        
+        assert(deliver(promise) == "Hello World")
+        assert(deliver(promise) == "Hello World")
+
+
     def test_settable(self):
+        """ setter from settable_proxy delivers """
+
         promise, setter, seterr = settable_proxy()
 
         assert(is_promise(promise))
@@ -82,8 +163,33 @@ class TestProxyPromise(unittest.TestCase):
         assert(promise == val)
 
 
+    def test_settable_err(self):
+        """ seterr from settable_proxy raises exception """
+
+        promise, setter, seterr = settable_proxy()
+        
+        assert(is_promise(promise))
+        assert(not is_delivered(promise))
+
+        seterr(*create_exc_tb(Exception("test_settable_err")))
+        
+        try:
+            deliver(promise)
+        except Exception, e:
+            pass
+        else:
+            # deliver had darn well better raise that exception
+            assert(False)
+
+        setter(8)
+        assert(is_delivered(promise))
+        assert(deliver(promise) == 8)
+
+
     def test_callable_int(self):
-        promise = ProxyPromise(lambda: 5)
+        """ callable work returning an int """
+
+        promise = proxy(lambda: 5)
 
         assert(is_promise(promise))
         assert(not is_delivered(promise))
@@ -97,7 +203,9 @@ class TestProxyPromise(unittest.TestCase):
 
         
     def test_non_callable_int(self):
-        promise = ProxyPromise(5)
+        """ int as promised work delivers immediately """
+
+        promise = proxy(5)
 
         assert(is_promise(promise))
         assert(is_delivered(promise))
