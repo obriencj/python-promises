@@ -55,7 +55,7 @@ still others at least provide an OO representation of the concept in
 some library. Python doesn't, by default, have any of these.
 
 In this library, the promise isn't necessarily that the passed work
-will be execute. The promise being made is that the answer or result
+will be executed. The promise being made is that the answer or result
 of a piece of computation will be delivered *if asked for*. As such,
 if no code ever attempts to retrieve a promised value, it's perfectly
 acceptable for there to be no attempt to execute the underlying
