@@ -25,20 +25,37 @@ license: LGPL v.3
 
 import unittest
 
-
-import unittest
+from promises import *
 
 
 class TestContainerPromise(unittest.TestCase):
 
     def testFoo(self):
-        pass
+        
+        promise, setter, seterr = settable_container()
+        assert(is_promise(promise))
+        assert(not is_delivered(promise))
+
+        val = { "testval": True, "a": 5, "b": tuple() }
+        setter(val)
+        assert(is_delivered(promise))
+
+        assert(deliver(promise) == val)
 
 
 class TestProxyPromise(unittest.TestCase):
 
-    def testFoo(self):
-        pass
+    def test_settable(self):
+
+        promise, setter, seterr = settable_proxy()
+        assert(is_promise(promise))
+        assert(not is_delivered(promise))
+
+        val = { "testval": True, "a": 5, "b": tuple() }
+        setter(val)
+        assert(is_delivered(promise))
+
+        assert(promise == val)
 
 
 #
