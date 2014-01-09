@@ -15,7 +15,7 @@
 
 """
 
-XML RPC Multical Promises
+XML RPC MultiCall Promises
 
 author: Christopher O'Brien  <obriencj@gmail.com>
 license: LGPL v.3
@@ -31,11 +31,11 @@ from xmlrpclib import MultiCall
 
 class PromiseMultiCall(object):
 
-    """ An alternative to xmlrpclib.MultiCall which allows the
-    programmer to receive promises for the calls as they are written,
-    rather than having to gather and distribute the results at the
-    end. Forcing a promise to deliver will also force this MultiCall
-    to execute all of its queued xmlrpc calls. """
+    """ A wrapper to xmlrpclib.MultiCall which allows the programmer
+    to receive promises for the calls as they are written, rather than
+    having to gather and distribute the results at the end. Forcing a
+    promise to deliver will also force this MultiCall to execute all
+    of its queued xmlrpc calls."""
 
     __metaclass__ = ABCMeta
 
@@ -45,10 +45,19 @@ class PromiseMultiCall(object):
         specified work """
         return None
 
-    def __init__(self, server):
+    def __init__(self, server, max_calls=0):
+        """ server is an xmlrpclib.Server instance. If max_calls is
+        greater than zero, it is the upper limit on how many promises
+        can be created before the underlying multicall is triggered
+        and the promises are delivered. A new multicall to the same
+        server is then created if any further promises are needed """
+
         self.server = server
         self.__mc = None
         self.__counter = 0
+
+        max_calls = int(max_calls)
+        self.__max_calls = max_calls if max_calls > 0 else 0
 
     def __enter__(self):
         """ The managed interface handler for this is just fluff, so
@@ -60,12 +69,17 @@ class PromiseMultiCall(object):
         return (exc_type is None)
 
     def deliver(self):
+        """ Retrieve answers for any of our currently outstanding
+        promises. """
+
         if self.__mc is not None:
             self.__mc()
-            self.__mc  = None
+            self.__mc = None
             self.__counter = 0
 
     def __deliver_on(self, mc, index):
+        assert(mc is not None)
+
         # if the promise is against the current MC, then we need to
         # deliver on it and clear ourselves to create a new
         # one. Otherwise, use the memoized answers for the already
@@ -94,7 +108,7 @@ class PromiseMultiCall(object):
             # value until we're certain that we've been used.
             index = self.__counter
             self.__counter += 1
-            
+
             # promise to get the answer out of this exact multicall's
             # collection of answers
             work = partial(self.__deliver_on, multicall, index)
@@ -102,7 +116,14 @@ class PromiseMultiCall(object):
             # the resulting promise will keep a reference to the
             # particular memoized multicall, as that is where it will
             # want to get its answer from.
-            return self.__promise__(work)
+            promised = self.__promise__(work)
+
+            # if this promise puts us at our threhold, then it's time
+            # to deliver.
+            if self.__max_calls and self.__max_calls <= self.__counter:
+                self.deliver()
+
+            return promised
 
         promisary.func_name = name
         return promisary

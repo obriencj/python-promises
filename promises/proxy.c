@@ -313,15 +313,15 @@ static void promise_dealloc(PyProxyPromise *self) {
 
 static PyObject *promise_new(PyTypeObject *type,
 			     PyObject *args, PyObject *kwds) {
-  
+
   PyProxyPromise *self;
-  
+
   self = (PyProxyPromise *) type->tp_alloc(type, 0);
   if (self != NULL) {
     self->work = NULL;
     self->answer = NULL;
   }
-  
+
   return (PyObject *) self;
 }
 
@@ -339,7 +339,7 @@ static int promise_init(PyProxyPromise *self,
   if (PyCallable_Check(work)) {
     self->work = work;
     Py_INCREF(work);
-    
+
   } else {
     self->answer = work;
     Py_INCREF(work);
@@ -441,7 +441,7 @@ PyObject *PyProxyPromise_Deliver(PyProxyPromise *proxy) {
 
 static PyObject *is_proxy(PyObject *module, PyObject *args) {
   PyObject *obj = NULL;
-  
+
   if (! PyArg_ParseTuple(args, "O", &obj))
     return NULL;
 
@@ -455,7 +455,7 @@ static PyObject *is_proxy(PyObject *module, PyObject *args) {
 
 static PyObject *is_proxy_delivered(PyObject *module, PyObject *args) {
   PyProxyPromise *proxy = NULL;
-  
+
   if (! PyArg_ParseTuple(args, "O!", &PyProxyPromiseType, &proxy))
     return NULL;
 
@@ -465,7 +465,7 @@ static PyObject *is_proxy_delivered(PyObject *module, PyObject *args) {
 
 static PyObject *deliver_proxy(PyObject *module, PyObject *args) {
   PyProxyPromise *proxy = NULL;
-  
+
   if (! PyArg_ParseTuple(args, "O!", &PyProxyPromiseType, &proxy))
     return NULL;
 
