@@ -29,6 +29,9 @@ from promises import ContainerPromise, ProxyPromise
 from xmlrpclib import MultiCall
 
 
+__all__ = ( 'PromiseMultiCall', 'ProxyMultiCall', 'ContainerMultiCall' )
+
+
 class PromiseMultiCall(object):
 
     """ A wrapper to xmlrpclib.MultiCall which allows the programmer

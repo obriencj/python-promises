@@ -32,6 +32,13 @@ from _proxy import is_proxy, is_proxy_delivered, deliver_proxy
 from threading import Event
 
 
+__all__ = ( 'ContainerPromise', 'ProxyPromise',
+            'PromiseNotReady', 'PromiseAlreadyDelivered',
+            'container', 'proxy',
+            'is_promise', 'is_delivered', 'deliver',
+            'settable_container', 'settable_proxy' )
+
+
 class ContainerPromise(object):
 
     """ Simple promise mechanism. Acts as a container to the promised
@@ -39,6 +46,8 @@ class ContainerPromise(object):
     from then on. Will invoke the promised work function exactly once,
     but can deliver the answer multiple times.
     """
+
+    __slots__ = ('_work', '_answer')
 
     def __init__(self, work):
         """ promises to provide the answer from calling work. work

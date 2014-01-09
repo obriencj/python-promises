@@ -28,6 +28,9 @@ from multiprocessing.pool import Pool
 from promises import ContainerPromise, ProxyPromise
 
 
+__all__ = ( 'Promising', 'ContainerPromising', 'ProxyPromising' )
+
+
 class Promising(object):
     
     """ A way to provide multiple promises which will be delivered in
