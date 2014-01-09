@@ -80,12 +80,13 @@ class TestContainerPromise(unittest.TestCase):
         assert(is_promise(promise))
         assert(not is_delivered(promise))
 
-        seterr(*create_exc_tb(Exception("test_settable_err")))
+        exc = Exception("test_settable_err")
+        seterr(*create_exc_tb(exc))
 
         try:
             deliver(promise)
         except Exception, e:
-            pass
+            assert(e == exc)
         else:
             # deliver had darn well better raise that exception
             assert(False)
@@ -171,12 +172,13 @@ class TestProxyPromise(unittest.TestCase):
         assert(is_promise(promise))
         assert(not is_delivered(promise))
 
-        seterr(*create_exc_tb(Exception("test_settable_err")))
+        exc = Exception("test_settable_err")
+        seterr(*create_exc_tb(exc))
 
         try:
             deliver(promise)
         except Exception, e:
-            pass
+            assert(e == exc)
         else:
             # deliver had darn well better raise that exception
             assert(False)
