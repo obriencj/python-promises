@@ -76,12 +76,12 @@ class TestContainerPromise(unittest.TestCase):
         """ seterr from settable_container causes deliver to raise """
 
         promise, setter, seterr = settable_container()
-        
+
         assert(is_promise(promise))
         assert(not is_delivered(promise))
 
         seterr(*create_exc_tb(Exception("test_settable_err")))
-        
+
         try:
             deliver(promise)
         except Exception, e:
@@ -100,10 +100,10 @@ class TestContainerPromise(unittest.TestCase):
 
         work = assert_called_once(lambda: "Hello World")
         promise = container(work)
-        
+
         assert(deliver(promise) == "Hello World")
         assert(deliver(promise) == "Hello World")
-        
+
 
     def test_callable_int(self):
         """ callable work returning an int """
@@ -118,7 +118,7 @@ class TestContainerPromise(unittest.TestCase):
         assert(deliver(promise) == 5)
         assert(x == 6)
 
-        
+
     def test_non_callable_int(self):
         """ int as promised work delivers immediately """
 
@@ -143,7 +143,7 @@ class TestProxyPromise(unittest.TestCase):
 
         work = assert_called_once(lambda: "Hello World")
         promise = proxy(work)
-        
+
         assert(deliver(promise) == "Hello World")
         assert(deliver(promise) == "Hello World")
 
@@ -167,12 +167,12 @@ class TestProxyPromise(unittest.TestCase):
         """ seterr from settable_proxy raises exception """
 
         promise, setter, seterr = settable_proxy()
-        
+
         assert(is_promise(promise))
         assert(not is_delivered(promise))
 
         seterr(*create_exc_tb(Exception("test_settable_err")))
-        
+
         try:
             deliver(promise)
         except Exception, e:
@@ -201,7 +201,7 @@ class TestProxyPromise(unittest.TestCase):
         assert(promise == 5)
         assert(x == 6)
 
-        
+
     def test_non_callable_int(self):
         """ int as promised work delivers immediately """
 
@@ -216,6 +216,28 @@ class TestProxyPromise(unittest.TestCase):
         assert(deliver(promise) == 5)
         assert(promise == 5)
         assert(x == 6)
+
+
+    def test_proxy_equality(self):
+        """ proxy equality works over a wide range of types """
+
+        class DummyClass(object):
+            pass
+
+        values = ( True, False,
+                   999, 9.99, "test string", u"unicode string",
+                   (1, 2, 3), [1, 2, 3],
+                   {"a":1,"b":2,"c":3},
+                   object, object(), DummyClass, DummyClass(),
+                   xrange, xrange(0, 99),
+                   lambda x: x+8 )
+
+        # TODO: set([1, 2, 3]) fails, need to look into why!
+
+        provs = [proxy(lambda:val) for val in values]
+
+        for val,prov in zip(values, provs):
+            assert(val == prov), "%r != %r" % (val, prov)
 
 
 #
