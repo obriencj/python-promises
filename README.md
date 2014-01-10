@@ -82,11 +82,12 @@ However, proxy promises are still their own type. As such, any code
 that is written which does a type check will potentially misbehave.
 
 An example of this is the builtin [set] type. Below we show that the
-proxy while the proxy will happily pass the [richcompare] call along
-to the underlying set and affirm that A and X are equal, X will first
-[check][set_richcompare] that the arguments to its richcompare call
-are another set instance. Since A is not a set (A is an instance of
-ProxyPromise), X's richcompare immediately returns False.
+proxy will happily pass the [richcompare] call along to the underlying
+set and affirm that A and X are equal. However, reverse the operands
+and X will first [check][set_richcompare] that the arguments to its
+richcompare call are another set instance. Since A is not a set (A is
+an instance of ProxyPromise), X's richcompare immediately returns
+False, indicating that X and A are not equal.
 
 ```
 >>> from promises import proxy, deliver
