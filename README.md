@@ -91,8 +91,7 @@ False, indicating that X and A are not equal.
 
 ```
 >>> from promises import proxy, deliver
->>> from functools import partial
->>> A = proxy(partial(set, [1, 2, 3]))
+>>> A = proxy(lambda: set([1, 2, 3]))
 >>> A
 set([1, 2, 3])
 >>> X = set([1, 2, 3])
