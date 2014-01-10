@@ -234,11 +234,10 @@ class TestProxyPromise(unittest.TestCase):
                    xrange, xrange(0, 99),
                    lambda x: x+8 )
 
-        # TODO: set([1, 2, 3]) fails, need to look into why!
-
         provs = [proxy(lambda:val) for val in values]
 
         for val,prov in zip(values, provs):
+            assert(prov == val), "%r != %r" % (prov, val)
             assert(val == prov), "%r != %r" % (val, prov)
 
 
