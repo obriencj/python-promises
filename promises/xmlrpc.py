@@ -40,7 +40,9 @@ class PromiseMultiCall(object):
     promise to deliver will also force this MultiCall to execute all
     of its queued xmlrpc calls."""
 
+
     __metaclass__ = ABCMeta
+
 
     @abstractmethod
     def __promise__(self, work):
@@ -48,67 +50,48 @@ class PromiseMultiCall(object):
         specified work """
         return None
 
-    def __init__(self, server, max_calls=0):
-        """ server is an xmlrpclib.Server instance. If max_calls is
-        greater than zero, it is the upper limit on how many promises
-        can be created before the underlying multicall is triggered
-        and the promises are delivered. A new multicall to the same
-        server is then created if any further promises are needed """
 
-        self.server = server
+    def __init__(self, server, group_calls=0):
+        """ server is an xmlrpclib.Server instance. If group_calls is
+        greater than zero, it is the upper limit on how many promises
+        will be delivered at a time. """
+
+        self.__server = server
+        self.__mclist = list()
         self.__mc = None
         self.__counter = 0
 
-        max_calls = int(max_calls)
-        self.__max_calls = max_calls if max_calls > 0 else 0
+        group_calls = int(group_calls)
+        self.__group_calls = group_calls if group_calls > 0 else 0
+
 
     def __enter__(self):
-        """ The managed interface handler for this is just fluff, so
-        that you can choose to use the 'with' keyword to denote when
-        you're using the multicall """
         return self
 
+
     def __exit__(self, exc_type, _exc_val, _exc_tb):
+        self()
         return (exc_type is None)
 
-    def deliver(self):
+
+    def __call__(self):
         """ Retrieve answers for any of our currently outstanding
         promises. """
 
-        if self.__mc is not None:
-            self.__mc()
-            self.__mc = None
-            self.__counter = 0
+        for mc in self.__mclist:
+            mc()
 
-    def __deliver_on(self, mc, index):
-        assert(mc is not None)
-
-        # if the promise is against the current MC, then we need to
-        # deliver on it and clear ourselves to create a new
-        # one. Otherwise, use the memoized answers for the already
-        # delivered MC. Then we return the result at the given index.
-        if mc is self.__mc:
-            self.deliver()
-
-        # a great feature of this is that the delivery or access of
-        # the promise will also raise the underlying fault if there
-        # happened to be one
-        return mc.deliver()[index]
 
     def __getattr__(self, name):
         def promisary(*args, **kwds):
             # make sure we have an underlying memoized multicall
-            multicall = self.__mc
-            if multicall is None:
-                multicall = MemoizedMultiCall(self.server)
-                self.__mc = multicall
+            multicall = self.__get_multicall()
 
             # enqueue the call in the multicall
             getattr(multicall, name)(*args, **kwds)
 
             # this is how we'll relate back to our answers from the
-            # current multicall. We wait to capture and increment this
-            # value until we're certain that we've been used.
+            # current multicall.
             index = self.__counter
             self.__counter += 1
 
@@ -121,15 +104,44 @@ class PromiseMultiCall(object):
             # want to get its answer from.
             promised = self.__promise__(work)
 
-            # if this promise puts us at our threhold, then it's time
-            # to deliver.
-            if self.__max_calls and self.__max_calls <= self.__counter:
-                self.deliver()
+            # if this promise puts us at our threhold for grouping
+            # calls, then it's time to start using a new mc
+            if self.__group_calls and self.__group_calls <= self.__counter:
+                self.__mc = None
+                self.__counter = 0
 
             return promised
 
         promisary.func_name = name
         return promisary
+
+
+    def __get_multicall(self):
+        multicall = self.__mc
+        if multicall is None:
+            multicall = MemoizedMultiCall(self.__server)
+            self.__mclist.append(multicall)
+            self.__mc = multicall
+            self.__counter = 0
+
+        return multicall
+
+
+    def __deliver_on(self, mc, index):
+        assert(mc is not None)
+
+        # if the promise is against the current MC, then we need to
+        # deliver on it and clear ourselves to create a new
+        # one. Otherwise, use the memoized answers for the already
+        # delivered MC. Then we return the result at the given index.
+        if mc is self.__mc:
+            self.__mc = None
+            self.__counter = 0
+
+        # a great feature of this is that the delivery or access of
+        # the promise will also raise the underlying fault if there
+        # happened to be one
+        return mc()[index]
 
 
 class MemoizedMultiCall(MultiCall):
