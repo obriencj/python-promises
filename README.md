@@ -67,6 +67,45 @@ work. Put another way, promises are not the same as tasks.
 "Futures and Promises"
 
 
+## Proxy Promise
+
+Proxy promises are a way to write promises without *looking* like
+you're writing promises. You treat the promise as though it were the
+answer itself. If your work delivers an int, then treat the proxy like
+an int. If your work delivers a dictionary, then treat the proxy like
+it were a dictionary.
+
+A proxy promise tries fairly hard to act like the delivered value, by
+passing along almost every conceivable call to the underlying answer.
+
+However, proxy promises are still their own type. As such, any code
+that is written which does a type check will potentially misbehave.
+
+An example of this is the builtin `set` type. Below we show that the
+proxy while the proxy will happily pass the richcompare call along to
+the underlying set and affirm that A and X are equal, X will first
+check that the arguments to its richcompare call are another set
+instance. Since A is not (A is an instance of ProxyPromise), X's
+richcompare immediately returns False.
+
+```
+>>> from promises import proxy, deliver
+>>> from functools import partial
+>>> A = proxy(partial(set, [1, 2, 3]))
+>>> A
+set([1, 2, 3])
+>>> X = set([1, 2, 3])
+>>> X
+set([1, 2, 3])
+>>> A == X
+True
+>>> X == A
+False
+>>> X == deliver(A)
+True
+```
+
+
 ## Requirements
 
 * [Python] 2.6 or later (no support for Python 3)
