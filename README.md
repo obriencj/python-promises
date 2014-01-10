@@ -81,12 +81,12 @@ passing along almost every conceivable call to the underlying answer.
 However, proxy promises are still their own type. As such, any code
 that is written which does a type check will potentially misbehave.
 
-An example of this is the builtin `set` type. Below we show that the
-proxy while the proxy will happily pass the richcompare call along to
-the underlying set and affirm that A and X are equal, X will first
-check that the arguments to its richcompare call are another set
-instance. Since A is not (A is an instance of ProxyPromise), X's
-richcompare immediately returns False.
+An example of this is the builtin [set] type. Below we show that the
+proxy while the proxy will happily pass the [richcompare] call along
+to the underlying set and affirm that A and X are equal, X will first
+[check][set_richcompare] that the arguments to its richcompare call
+are another set instance. Since A is not a set (A is an instance of
+ProxyPromise), X's richcompare immediately returns False.
 
 ```
 >>> from promises import proxy, deliver
@@ -104,6 +104,13 @@ False
 >>> X == deliver(A)
 True
 ```
+
+[set]: http://docs.python.org/2/library/stdtypes.html#set-types-set-frozenset
+"5.7. Set Types - set, frozenset"
+
+[richcompare]: http://docs.python.org/2/c-api/typeobj.html#PyTypeObject.tp_richcompare
+
+[set_richcompare]: http://hg.python.org/cpython/file/779de7b4909b/Objects/setobject.c#l1794
 
 
 ## Requirements
