@@ -149,6 +149,23 @@ python setup.py install
 ```
 
 
+## Related
+
+Lots of alternative implementations following different wavelengths of
+this concept. Here are some for your perusal.
+
+* [concurrent.futures] - [Python 3.4] (in Beta) includes [PEP-3148]
+* [futureutils] - Introduces futures and promises into iterators
+* [aplus] - Promises/A+ specification in Python
+* [promised] - Python "promise" for output of asynchronous operations, and callback chaining.
+
+[concurrent.futures]: http://docs.python.org/dev/library/concurrent.futures.html
+[futureutils]: https://pypi.python.org/pypi/futureutils
+[aplus]: https://github.com/xogeny/aplus
+[promised]: https://code.google.com/p/promised/
+[python 3.4]: http://docs.python.org/dev/whatsnew/3.4.html
+
+
 ## Contact
 
 Christopher O'Brien <obriencj@gmail.com>
