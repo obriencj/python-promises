@@ -15,7 +15,7 @@ which point I'll tag it and cut a release. Feel free to play, fork, or
 experiment.
 
 * [python-promises on GitHub][github]
-* python-promises not on PyPI until v1.0.0
+* python-promises not on PyPI until version 1.0.0
 
 [python]: http://python.org "Python"
 
@@ -115,12 +115,13 @@ True
 
 ## Requirements
 
-* [Python] 2.6 or later (no support for Python 3)
+* [Python] 2.6 or later (no support for Python 3 unless someone else
+  wants to hack in all the macros for the proxy code)
 
 
 ## Install
 
-This module uses distutils, so simply run
+This module uses setuptools, so simply run
 
 ```
 python setup.py install
