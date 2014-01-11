@@ -69,9 +69,9 @@ work. Put another way, promises are not the same as tasks.
 ## Lazy Container
 
 A lazy container is a simple, object-oriented placeholder. It can be
-created by invoking the `promises.lazy` function, passing a nullary
-work function as the single argument. When delivered, the container
-will call that work and collect the result as its answer. Any further
+created by invoking the `lazy` function, passing a nullary work
+function as the single argument. When delivered, the container will
+call that work and collect the result as its answer. Any further
 invocations of deliver will return the answer without re-executing the
 work. However, if an exception is raised by the work during delivery
 the container will not be considered as delivered. In the case of a
@@ -83,11 +83,10 @@ until an answer is finally returned.
 
 Proxies are a way to write promises without *looking* like you're
 writing promises. You treat the proxy as though it were the answer
-itself. A proxy is created by invoking the `promises.lazy_proxy`
-function, and passing a nullary work function as the single
-argument. If your work delivers an int, then treat the proxy like an
-int. If your work delivers a dictionary, then treat the proxy like it
-were a dictionary.
+itself. A proxy is created by invoking the `lazy_proxy` function, and
+passing a nullary work function as the single argument. If your work
+delivers an int, then treat the proxy like an int. If your work
+delivers a dictionary, then treat the proxy like it were a dictionary.
 
 A proxy tries fairly hard to act like the delivered value, by passing
 along almost every conceivable call to the underlying answer.
@@ -125,24 +124,6 @@ True
 [richcompare]: http://docs.python.org/2/c-api/typeobj.html#PyTypeObject.tp_richcompare
 
 [set_richcompare]: http://hg.python.org/cpython/file/779de7b4909b/Objects/setobject.c#l1794
-
-
-## Promise Container
-
-A promise is obtained via the `promises.promise` function, which
-returns three things.
-
-* a container
-* a function to feed a value into the container
-* a function to feed exception info into the container
-
-This provides the standard "promise pipeline" as commonly known.
-
-
-## Promise Proxy
-
-`promises.promise_proxy` works much like `promises.promise` except
-that rather than a container, it returns a proxy.
 
 
 ## Requirements
