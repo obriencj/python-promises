@@ -23,44 +23,38 @@ license: LGPL v.3
 """
 
 
-from abc import abstractmethod, ABCMeta
 from promises import *
 from promises.xmlrpc import *
 from unittest import TestCase
 
 
-class TestBaseMultiCall(object):
-    
-    __metaclass__ = ABCMeta
+class TestLazyMultiCall(TestCase):
 
     def __init__(self, *args, **kwds):
-        super(TestBaseMultiCall, self).__init__(*args, **kwds)
+        super(TestLazyMultiCall, self).__init__(*args, **kwds)
         self.server = None
+
+
+    def multicall(self):
+        return LazyMultiCall(self.server)
+
 
     def get_server(self):
         return self.server
 
-    @abstractmethod
-    def multicall(self, server):
-        return None
-
 
     def test_constructor(self):
-        mc = self.multicall(None)
+        mc = self.multicall()
 
 
     def test_maxcalls(self):
-        mc = self.multicall(self.get_server())
+        mc = self.multicall()
 
 
-class TestContainerMultiCall(TestBaseMultiCall, TestCase):
-    def multicall(self, server):
-        return ContainerMultiCall(server)
+class TestProxyMultiCall(TestLazyMultiCall):
 
-
-class TestProxyMultiCall(TestBaseMultiCall, TestCase):
-    def multicall(self, server):
-        return ProxyMultiCall(server)
+    def multicall(self):
+        return ProxyMultiCall(self.server)
 
 
 #

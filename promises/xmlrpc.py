@@ -23,16 +23,15 @@ license: LGPL v.3
 """
 
 
-from abc import ABCMeta, abstractmethod
 from functools import partial
-from promises import ContainerPromise, ProxyPromise
+from promises import lazy, lazy_proxy
 from xmlrpclib import MultiCall
 
 
-__all__ = ( 'PromiseMultiCall', 'ProxyMultiCall', 'ContainerMultiCall' )
+__all__ = ( 'LazyMultiCall', 'ProxyMultiCall' )
 
 
-class PromiseMultiCall(object):
+class LazyMultiCall(object):
 
     """ A wrapper to xmlrpclib.MultiCall which allows the programmer
     to receive promises for the calls as they are written, rather than
@@ -41,14 +40,8 @@ class PromiseMultiCall(object):
     of its queued xmlrpc calls."""
 
 
-    __metaclass__ = ABCMeta
-
-
-    @abstractmethod
     def __promise__(self, work):
-        """ must be overridden to provide a promise to do the
-        specified work """
-        return None
+        return lazy(work)
 
 
     def __init__(self, server, group_calls=0):
@@ -144,6 +137,14 @@ class PromiseMultiCall(object):
         return mc()[index]
 
 
+def ProxyMultiCall(LazyMultiCall):
+
+    """ A PromiseMultiCall which will returns Proxy instead of Container """
+
+    def __promise__(self, work):
+        return lazy_proxy(work)
+
+
 class MemoizedMultiCall(MultiCall):
     """ A Memoized MultiCall, will only perform the underlying xmlrpc
     call once, remembers the answers for all further requests """
@@ -156,20 +157,6 @@ class MemoizedMultiCall(MultiCall):
         if self.__answers is None:
             self.__answers = MultiCall.__call__(self)
         return self.__answers
-
-
-def ProxyMultiCall(PromiseMultiCall):
-    """ A MultiCall which will return ProxyPromises """
-
-    def __promise__(self, work):
-        return ProxyPromise(work)
-
-
-def ContainerMultiCall(PromiseMultiCall):
-    """ A MultiCall which will return ContainerPromises """
-
-    def __promise__(self, work):
-        return ContainerPromise(work)
 
 
 #

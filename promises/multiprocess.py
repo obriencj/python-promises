@@ -23,27 +23,22 @@ license: LGPL v.3
 """
 
 
-from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import Pool
-from promises import ContainerPromise, ProxyPromise
+from promises import lazy, lazy_proxy
 
 
-__all__ = ( 'Promising', 'ContainerPromising', 'ProxyPromising' )
+__all__ = ( 'Executor', 'ProxyExecutor' )
 
 
-class Promising(object):
+class Executor(object):
     
     """ A way to provide multiple promises which will be delivered in
-    a separate process. See ContainerPromising or ProxyPromising for
-    concrete implementations. """
+    a separate process. """
 
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
     def __promise__(self, work):
         """ must be overridden to provide a promise to do the
         specified work """
-        return None
+        return lazy(work)
 
     def __init__(self, processes=None):
         self.__processes = processes
@@ -88,22 +83,13 @@ class Promising(object):
         return (self.__pool is None)
 
 
-class ContainerPromising(Promising):
-
-    """ Creates container promises, which will deliver in a separate
-    process """
-
-    def __promise__(self, work):
-        return ContainerPromise(work)
-
-
-class ProxyPromising(Promising):
+class ProxyExecutor(Executor):
 
     """ Creates transparent proxy promises, which will deliver in a
     separate process """
 
     def __promise__(self, work):
-        return ProxyPromise(work)
+        return lazy_proxy(work)
 
 
 #

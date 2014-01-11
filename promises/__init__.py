@@ -27,19 +27,19 @@ license: LGPL v.3
 """
 
 
-from _proxy import ProxyPromise
+from _proxy import Proxy
 from _proxy import is_proxy, is_proxy_delivered, deliver_proxy
 from threading import Event
 
 
-__all__ = ( 'ContainerPromise', 'ProxyPromise',
+__all__ = ( 'Container', 'Proxy',
+            'lazy', 'lazy_proxy',
+            'promise', 'promise_proxy',
             'PromiseNotReady', 'PromiseAlreadyDelivered',
-            'container', 'proxy',
-            'is_promise', 'is_delivered', 'deliver',
-            'settable_container', 'settable_proxy' )
+            'is_promise', 'is_delivered', 'deliver', )
 
 
-class ContainerPromise(object):
+class Container(object):
 
     """ Simple promise mechanism. Acts as a container to the promised
     work until delivered, and then acts as a container to the answer
@@ -119,14 +119,14 @@ def deliver(obj):
         else obj.deliver()
 
 
-def container(work):
+def lazy(work):
     """ creates a new container promise to find an answer for work """
-    return ContainerPromise(work)
+    return Container(work)
 
 
-def proxy(work):
+def lazy_proxy(work):
     """ creates a new proxy promise to find an answer for work """
-    return ProxyPromise(work)
+    return Proxy(work)
 
 
 class PromiseNotReady(Exception):
@@ -142,11 +142,10 @@ class PromiseAlreadyDelivered(Exception):
     pass
 
 
-def _settable_promise(promise_type, blocking=False):
+def _promise(promise_type, blocking=False):
 
     """ This is the 'traditional' type of promise. It's a single-slot,
-    write-once value. I like mine better. But check it out, mine can
-    turn into the boring one with the greatest of ease! """
+    write-once value. """
 
     # our shared state! trololol closures
     ptr = list()
@@ -192,9 +191,9 @@ def _settable_promise(promise_type, blocking=False):
     return (promise, promise_setter, promise_seterr)
 
 
-def settable_container(blocking=False):
+def promise(blocking=False):
 
-    """ Returns a tuple of a new ContainerPromise, a unary function to
+    """ Returns a tuple of a new Container, a unary function to
     deliver a value into that promise, and a ternary function to feed
     an exception to the promise.
 
@@ -210,13 +209,13 @@ def settable_container(blocking=False):
 
     """
 
-    return _settable_promise(ContainerPromise, blocking=blocking)
+    return _promise(Container, blocking=blocking)
 
 
-def settable_proxy(blocking=False):
+def promise_proxy(blocking=False):
 
-    """ Returns a tuple of a new ProxyPromise, a unary function to deliver
-    a value into that promise, and a ternary function to feed an
+    """ Returns a tuple of a new Proxy, a unary function to deliver a
+    value into that promise, and a ternary function to feed an
     exception to the promise.
 
     If blocking is set to True, then any attempt to deliver on the
@@ -232,7 +231,7 @@ def settable_proxy(blocking=False):
 
     """
 
-    return _settable_promise(ProxyPromise, blocking=blocking)
+    return _promise(Proxy, blocking=blocking)
 
 
 #

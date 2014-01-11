@@ -52,39 +52,39 @@ def create_exc_tb(exception=None):
         return sys.exc_info()
 
 
-class TestContainerPromise(unittest.TestCase):
+class TestContainer(unittest.TestCase):
 
     """ tests for the ContainerPromise class """
 
 
-    def test_settable(self):
+    def test_promise(self):
         """ setter from settable_container delivers """
 
-        promise, setter, seterr = settable_container()
+        promised, setter, seterr = promise()
 
-        assert(is_promise(promise))
-        assert(not is_delivered(promise))
+        assert(is_promise(promised))
+        assert(not is_delivered(promised))
 
         val = { "testval": True, "a": 5, "b": tuple() }
         setter(val)
 
-        assert(is_delivered(promise))
-        assert(deliver(promise) == val)
+        assert(is_delivered(promised))
+        assert(deliver(promised) == val)
 
 
-    def test_settable_err(self):
+    def test_promise_err(self):
         """ seterr from settable_container causes deliver to raise """
 
-        promise, setter, seterr = settable_container()
+        promised, setter, seterr = promise()
 
-        assert(is_promise(promise))
-        assert(not is_delivered(promise))
+        assert(is_promise(promised))
+        assert(not is_delivered(promised))
 
         exc = Exception("test_settable_err")
         seterr(*create_exc_tb(exc))
 
         try:
-            deliver(promise)
+            deliver(promised)
         except Exception, e:
             assert(e == exc)
         else:
@@ -92,91 +92,91 @@ class TestContainerPromise(unittest.TestCase):
             assert(False)
 
         setter(8)
-        assert(is_delivered(promise))
-        assert(deliver(promise) == 8)
+        assert(is_delivered(promised))
+        assert(deliver(promised) == 8)
 
 
-    def test_memoized(self):
+    def test_lazy_memoized(self):
         """ promised work is only executed once. """
 
         work = assert_called_once(lambda: "Hello World")
-        promise = container(work)
+        promised = lazy(work)
 
-        assert(deliver(promise) == "Hello World")
-        assert(deliver(promise) == "Hello World")
+        assert(deliver(promised) == "Hello World")
+        assert(deliver(promised) == "Hello World")
 
 
     def test_callable_int(self):
         """ callable work returning an int """
 
-        promise = container(lambda: 5)
+        promised = lazy(lambda: 5)
 
-        assert(is_promise(promise))
-        assert(not is_delivered(promise))
+        assert(is_promise(promised))
+        assert(not is_delivered(promised))
 
-        x = deliver(promise) + 1
-        assert(is_delivered(promise))
-        assert(deliver(promise) == 5)
+        x = deliver(promised) + 1
+        assert(is_delivered(promised))
+        assert(deliver(promised) == 5)
         assert(x == 6)
 
 
     def test_non_callable_int(self):
         """ int as promised work delivers immediately """
 
-        promise = container(5)
+        promised = lazy(5)
 
-        assert(is_promise(promise))
-        assert(is_delivered(promise))
+        assert(is_promise(promised))
+        assert(is_delivered(promised))
 
-        x = deliver(promise) + 1
-        assert(is_delivered(promise))
-        assert(deliver(promise) == 5)
+        x = deliver(promised) + 1
+        assert(is_delivered(promised))
+        assert(deliver(promised) == 5)
         assert(x == 6)
 
 
-class TestProxyPromise(unittest.TestCase):
+class TestProxy(unittest.TestCase):
 
     """ tests for the ProxyPromise class """
 
 
-    def test_memoized(self):
+    def test_proxy_memoized(self):
         """ promised work is only executed once """
 
         work = assert_called_once(lambda: "Hello World")
-        promise = proxy(work)
+        promised = lazy_proxy(work)
 
-        assert(deliver(promise) == "Hello World")
-        assert(deliver(promise) == "Hello World")
+        assert(deliver(promised) == "Hello World")
+        assert(deliver(promised) == "Hello World")
 
 
     def test_settable(self):
         """ setter from settable_proxy delivers """
 
-        promise, setter, seterr = settable_proxy()
+        promised, setter, seterr = promise_proxy()
 
-        assert(is_promise(promise))
-        assert(not is_delivered(promise))
+        assert(is_promise(promised))
+        assert(not is_delivered(promised))
 
         val = { "testval": True, "a": 5, "b": tuple() }
         setter(val)
 
-        assert(is_delivered(promise))
-        assert(promise == val)
+        assert(is_delivered(promised))
+        assert(promised == val)
 
 
     def test_settable_err(self):
         """ seterr from settable_proxy raises exception """
 
-        promise, setter, seterr = settable_proxy()
+        promised, setter, seterr = promise_proxy()
 
-        assert(is_promise(promise))
-        assert(not is_delivered(promise))
+        assert(is_promise(promised))
+        assert(not is_delivered(promised))
 
         exc = Exception("test_settable_err")
         seterr(*create_exc_tb(exc))
 
         try:
-            deliver(promise)
+            deliver(promised)
         except Exception, e:
             assert(e == exc)
         else:
@@ -184,39 +184,39 @@ class TestProxyPromise(unittest.TestCase):
             assert(False)
 
         setter(8)
-        assert(is_delivered(promise))
-        assert(deliver(promise) == 8)
+        assert(is_delivered(promised))
+        assert(deliver(promised) == 8)
 
 
     def test_callable_int(self):
         """ callable work returning an int """
 
-        promise = proxy(lambda: 5)
+        promised = lazy_proxy(lambda: 5)
 
-        assert(is_promise(promise))
-        assert(not is_delivered(promise))
+        assert(is_promise(promised))
+        assert(not is_delivered(promised))
 
-        x = promise + 1
+        x = promised + 1
 
-        assert(is_delivered(promise))
-        assert(deliver(promise) == 5)
-        assert(promise == 5)
+        assert(is_delivered(promised))
+        assert(deliver(promised) == 5)
+        assert(promised == 5)
         assert(x == 6)
 
 
     def test_non_callable_int(self):
         """ int as promised work delivers immediately """
 
-        promise = proxy(5)
+        promised = lazy_proxy(5)
 
-        assert(is_promise(promise))
-        assert(is_delivered(promise))
+        assert(is_promise(promised))
+        assert(is_delivered(promised))
 
-        x = promise + 1
+        x = promised + 1
 
-        assert(is_delivered(promise))
-        assert(deliver(promise) == 5)
-        assert(promise == 5)
+        assert(is_delivered(promised))
+        assert(deliver(promised) == 5)
+        assert(promised == 5)
         assert(x == 6)
 
 
@@ -234,7 +234,7 @@ class TestProxyPromise(unittest.TestCase):
                    xrange, xrange(0, 99),
                    lambda x: x+8 )
 
-        provs = [proxy(lambda:val) for val in values]
+        provs = [lazy_proxy(lambda:val) for val in values]
 
         for val,prov in zip(values, provs):
             assert(prov == val), "%r != %r" % (prov, val)

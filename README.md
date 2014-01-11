@@ -4,10 +4,9 @@
 A [Python] module providing container and proxy promises, supporting
 delayed linear and multi-processing delivery.
 
-This is dissimilar to [PEP-3148], where the focus is on simplified
-parallel execution. We focus more on the concept of a promise as a
-placeholder to a value which may not have been delivered yet. Futures
-as described could be used to deliver on promises, perhaps.
+This is dissimilar to [PEP-3148], where the focus is on a robust
+asynchronous delivery framework. We're mostly interested in simple
+deferral and most of all, transparent proxies.
 
 At this stage this project is just a rough draft. I've set the version
 to 0.9.0 and am not promising any kind of API stability until 1.0.0 at
@@ -67,37 +66,33 @@ work. Put another way, promises are not the same as tasks.
 "Futures and Promises"
 
 
-## Container Promise
+## Lazy Container
 
-A container promise is a simple, object-oriented placeholder. When
-created it is handed a work function, which can be any nullary
-callable. When delivered, the promise will call that work and collect
-the result as its answer. Any further invocations of deliver will
-return the answer without re-executing the work. However, if an
-exception is raised by the work during delivery the promise will not
-be considered as delivered. In the case of a transient issue (such as
-a time-out), delivery can be attempted again until an answer is
-finally returned.
-
-More: [Example Container Promise]
-
-[Example Container Promise]: https://github.com/obriencj/python-promises/wiki/Example-Container-Promise
+A lazy container is a simple, object-oriented placeholder. It can be
+created by invoking the `promises.lazy` function, passing a nullary
+work function as the single argument. When delivered, the container
+will call that work and collect the result as its answer. Any further
+invocations of deliver will return the answer without re-executing the
+work. However, if an exception is raised by the work during delivery
+the container will not be considered as delivered. In the case of a
+transient issue (such as a time-out), delivery can be attempted again
+until an answer is finally returned.
 
 
-## Proxy Promise
+## Lazy Proxy
 
-Proxy promises are a way to write promises without *looking* like
-you're writing promises. You treat the promise as though it were the
-answer itself. If your work delivers an int, then treat the proxy like
-an int. If your work delivers a dictionary, then treat the proxy like
-it were a dictionary.
+Proxies are a way to write promises without *looking* like you're
+writing promises. You treat the proxy as though it were the answer
+itself. A proxy is created by invoking the `promises.lazy_proxy`
+function, and passing a nullary work function as the single
+argument. If your work delivers an int, then treat the proxy like an
+int. If your work delivers a dictionary, then treat the proxy like it
+were a dictionary.
 
-More: [Example Proxy Promise]
+A proxy tries fairly hard to act like the delivered value, by passing
+along almost every conceivable call to the underlying answer.
 
-A proxy promise tries fairly hard to act like the delivered value, by
-passing along almost every conceivable call to the underlying answer.
-
-However, proxy promises are still their own type. As such, any code
+However, proxies are still their own type. As such, any code
 that is written which does a type check will potentially misbehave.
 
 An example of this is the builtin [set] type. Below we show that the
@@ -105,12 +100,12 @@ proxy will happily pass the [richcompare] call along to the underlying
 set and affirm that A and X are equal. However, reverse the operands
 and X will first [check][set_richcompare] that the arguments to its
 richcompare call are another set instance. Since A is not a set (A is
-an instance of ProxyPromise), X's richcompare immediately returns
+an instance of promises.Proxy), X's richcompare immediately returns
 False, indicating that X and A are not equal.
 
 ```
->>> from promises import proxy, deliver
->>> A = proxy(lambda: set([1, 2, 3]))
+>>> from promises import lazy_proxy, deliver
+>>> A = lazy_proxy(lambda: set([1, 2, 3]))
 >>> A
 set([1, 2, 3])
 >>> X = set([1, 2, 3])
@@ -124,14 +119,30 @@ False
 True
 ```
 
-[Example Proxy Promise]: https://github.com/obriencj/python-promises/wiki/Example-Proxy-Promise
-
 [set]: http://docs.python.org/2/library/stdtypes.html#set-types-set-frozenset
 "5.7. Set Types - set, frozenset"
 
 [richcompare]: http://docs.python.org/2/c-api/typeobj.html#PyTypeObject.tp_richcompare
 
 [set_richcompare]: http://hg.python.org/cpython/file/779de7b4909b/Objects/setobject.c#l1794
+
+
+## Promise Container
+
+A promise is obtained via the `promises.promise` function, which
+returns three things.
+
+* a container
+* a function to feed a value into the container
+* a function to feed exception info into the container
+
+This provides the standard "promise pipeline" as commonly known.
+
+
+## Promise Proxy
+
+`promises.promise_proxy` works much like `promises.promise` except
+that rather than a container, it returns a proxy.
 
 
 ## Requirements
