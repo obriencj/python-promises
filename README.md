@@ -67,6 +67,23 @@ work. Put another way, promises are not the same as tasks.
 "Futures and Promises"
 
 
+## Container Promise
+
+A container promise is a simple, object-oriented placeholder. When
+created it is handed a work function, which can be any nullary
+callable. When delivered, the promise will call that work and collect
+the result as its answer. Any further invocations of deliver will
+return the answer without re-executing the work. However, if an
+exception is raised by the work during delivery the promise will not
+be considered as delivered. In the case of a transient issue (such as
+a time-out), delivery can be attempted again until an answer is
+finally returned.
+
+More: [Example Container Promise]
+
+[Example Container Promise]: https://github.com/obriencj/python-promises/wiki/Example-Container-Promise
+
+
 ## Proxy Promise
 
 Proxy promises are a way to write promises without *looking* like
@@ -74,6 +91,8 @@ you're writing promises. You treat the promise as though it were the
 answer itself. If your work delivers an int, then treat the proxy like
 an int. If your work delivers a dictionary, then treat the proxy like
 it were a dictionary.
+
+More: [Example Proxy Promise]
 
 A proxy promise tries fairly hard to act like the delivered value, by
 passing along almost every conceivable call to the underlying answer.
@@ -104,6 +123,8 @@ False
 >>> X == deliver(A)
 True
 ```
+
+[Example Proxy Promise]: https://github.com/obriencj/python-promises/wiki/Example-Proxy-Promise
 
 [set]: http://docs.python.org/2/library/stdtypes.html#set-types-set-frozenset
 "5.7. Set Types - set, frozenset"
