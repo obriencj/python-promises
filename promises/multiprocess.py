@@ -45,17 +45,15 @@ class Executor(object):
         self.__pool = None
         
     def __enter__(self):
-        """ Though Promising offers the management interface, it
-        doesn't really use it in any way. I consider it a beneficial
-        marker that we're operating against multiple processes though."""
         return self
 
     def __exit__(self, exc_type, _exc_val, _exc_tb):
+        self.deliver()
         return (exc_type is None)
 
-    def promise(self, work):
-        """ queue up work as a promise, which may be delievered in a
-        separate process. """
+    def future(self, work):
+        """ queue up work as to occur in a separate process, returning
+        a container to reference the result """
 
         if not self.__pool:
             self.__pool = Pool(processes=self.__processes)
