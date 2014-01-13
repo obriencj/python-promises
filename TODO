@@ -28,3 +28,7 @@ Here are the basic ideas for this project
 
 - create an xmlrpc multicall which utilizes both types of promises
 
+- as I write this, I am becoming aware that someone is going to become
+  confused by my naming conventions vs the naming conventions all the
+  other promise/future/defer/delay implementations use. I may need to
+  change names all over the place...
