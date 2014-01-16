@@ -23,6 +23,7 @@ license: LGPL v.3
 """
 
 
+from functools import partial
 from multiprocessing.pool import Pool
 from promises import lazy, lazy_proxy
 
@@ -51,13 +52,16 @@ class Executor(object):
         self.deliver()
         return (exc_type is None)
 
-    def future(self, work):
+    def future(self, work, *args, **kwds):
         """ queue up work as to occur in a separate process, returning
         a container to reference the result """
 
         if not self.__pool:
             self.__pool = Pool(processes=self.__processes)
         
+        if args or kwds:
+            work = partial(work, *args, **kwds)
+
         # yay for Pool.apply_async, doing all the heavy lifting for
         # us, so we don't need to correlate tasks or deal with Queues
         # ourselves. However, this does NOT handle KeyboardInterrupt

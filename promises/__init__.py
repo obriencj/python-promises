@@ -29,6 +29,7 @@ license: LGPL v.3
 
 from _proxy import Proxy
 from _proxy import is_proxy, is_proxy_delivered, deliver_proxy
+from functools import partial
 from threading import Event
 
 
@@ -119,13 +120,25 @@ def deliver(obj):
         else obj.deliver()
 
 
-def lazy(work):
-    """ creates a new container promise to find an answer for work """
+def lazy(work, *args, **kwds):
+    """ creates a new container promise to find an answer for work. If
+    any additional arguments or keywords are provided a partial will
+    be created to pass them to the work function and the partial will
+    be stored as the nullary work. """
+
+    if args or kwds:
+        work = partial(work, *args, **kwds)
     return Container(work)
 
 
-def lazy_proxy(work):
-    """ creates a new proxy promise to find an answer for work """
+def lazy_proxy(work, *args, **kwds):
+    """ creates a new proxy promise to find an answer for work. If any
+    additional arguments or keywords are provided a partial will be
+    created to pass them to the work function and the partial will be
+    stored as the nullary work. """
+
+    if args or kwds:
+        work = partial(work, *args, **kwds)
     return Proxy(work)
 
 
