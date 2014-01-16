@@ -104,7 +104,7 @@ False, indicating that X and A are not equal.
 
 ```
 >>> from promises import lazy_proxy, deliver
->>> A = lazy_proxy(lambda: set([1, 2, 3]))
+>>> A = lazy_proxy(set, [1, 2, 3])
 >>> A
 set([1, 2, 3])
 >>> X = set([1, 2, 3])
