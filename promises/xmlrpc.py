@@ -23,7 +23,6 @@ license: LGPL v.3
 """
 
 
-from functools import partial
 from promises import lazy, lazy_proxy
 from xmlrpclib import MultiCall
 
@@ -88,14 +87,10 @@ class LazyMultiCall(object):
             index = self.__counter
             self.__counter += 1
 
-            # promise to get the answer out of this exact multicall's
-            # collection of answers
-            work = partial(self.__deliver_on, multicall, index)
-
             # the resulting promise will keep a reference to the
             # particular memoized multicall, as that is where it will
             # want to get its answer from.
-            promised = self.__promise__(work)
+            promised = self.__promise__(self.__deliver_on, multicall, index)
 
             # if this promise puts us at our threhold for grouping
             # calls, then it's time to start using a new mc
