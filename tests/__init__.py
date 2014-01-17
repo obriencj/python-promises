@@ -57,10 +57,18 @@ class TestContainer(unittest.TestCase):
     """ tests for the ContainerPromise class """
 
 
-    def test_promise(self):
-        """ setter from settable_container delivers """
+    def lazy(self, work, *args, **kwds):
+        return lazy(work, *args, **kwds)
 
-        promised, setter, seterr = promise()
+
+    def promise(self):
+        return promise()
+
+
+    def test_promise_setter(self):
+        # setter from settable_container delivers
+
+        promised, setter, seterr = self.promise()
 
         assert(is_promise(promised))
         assert(not is_delivered(promised))
@@ -72,10 +80,10 @@ class TestContainer(unittest.TestCase):
         assert(deliver(promised) == val)
 
 
-    def test_promise_err(self):
-        """ seterr from settable_container causes deliver to raise """
+    def test_promise_seterr(self):
+        # seterr from settable_container causes deliver to raise
 
-        promised, setter, seterr = promise()
+        promised, setter, seterr = self.promise()
 
         assert(is_promise(promised))
         assert(not is_delivered(promised))
@@ -96,20 +104,20 @@ class TestContainer(unittest.TestCase):
         assert(deliver(promised) == 8)
 
 
-    def test_lazy_memoized(self):
-        """ promised work is only executed once. """
+    def test_memoized(self):
+        # promised work is only executed once.
 
         work = assert_called_once(lambda: "Hello World")
-        promised = lazy(work)
+        promised = self.lazy(work)
 
         assert(deliver(promised) == "Hello World")
         assert(deliver(promised) == "Hello World")
 
 
     def test_callable_int(self):
-        """ callable work returning an int """
+        # callable work returning an int
 
-        promised = lazy(lambda: 5)
+        promised = self.lazy(lambda: 5)
 
         assert(is_promise(promised))
         assert(not is_delivered(promised))
@@ -121,9 +129,9 @@ class TestContainer(unittest.TestCase):
 
 
     def test_non_callable_int(self):
-        """ int as promised work delivers immediately """
+        # int as promised work delivers immediately
 
-        promised = lazy(5)
+        promised = self.lazy(5)
 
         assert(is_promise(promised))
         assert(is_delivered(promised))
@@ -134,94 +142,21 @@ class TestContainer(unittest.TestCase):
         assert(x == 6)
 
 
-class TestProxy(unittest.TestCase):
+class TestProxy(TestContainer):
 
     """ tests for the ProxyPromise class """
 
 
-    def test_proxy_memoized(self):
-        """ promised work is only executed once """
-
-        work = assert_called_once(lambda: "Hello World")
-        promised = lazy_proxy(work)
-
-        assert(deliver(promised) == "Hello World")
-        assert(deliver(promised) == "Hello World")
+    def lazy(self, work, *args, **kwds):
+        return lazy_proxy(work, *args, **kwds)
 
 
-    def test_settable(self):
-        """ setter from settable_proxy delivers """
-
-        promised, setter, seterr = promise_proxy()
-
-        assert(is_promise(promised))
-        assert(not is_delivered(promised))
-
-        val = { "testval": True, "a": 5, "b": tuple() }
-        setter(val)
-
-        assert(is_delivered(promised))
-        assert(promised == val)
-
-
-    def test_settable_err(self):
-        """ seterr from settable_proxy raises exception """
-
-        promised, setter, seterr = promise_proxy()
-
-        assert(is_promise(promised))
-        assert(not is_delivered(promised))
-
-        exc = Exception("test_settable_err")
-        seterr(*create_exc_tb(exc))
-
-        try:
-            deliver(promised)
-        except Exception, e:
-            assert(e == exc)
-        else:
-            # deliver had darn well better raise that exception
-            assert(False)
-
-        setter(8)
-        assert(is_delivered(promised))
-        assert(deliver(promised) == 8)
-
-
-    def test_callable_int(self):
-        """ callable work returning an int """
-
-        promised = lazy_proxy(lambda: 5)
-
-        assert(is_promise(promised))
-        assert(not is_delivered(promised))
-
-        x = promised + 1
-
-        assert(is_delivered(promised))
-        assert(deliver(promised) == 5)
-        assert(promised == 5)
-        assert(x == 6)
-
-
-    def test_non_callable_int(self):
-        """ int as promised work delivers immediately """
-
-        promised = lazy_proxy(5)
-
-        assert(is_promise(promised))
-        assert(is_delivered(promised))
-
-        x = promised + 1
-
-        assert(is_delivered(promised))
-        assert(deliver(promised) == 5)
-        assert(promised == 5)
-        assert(x == 6)
+    def promise(self):
+        return promise_proxy()
 
 
     def test_proxy_equality(self):
-        """ proxy equality works over a wide range of types """
+        # proxy equality works over a wide range of types
 
         class DummyClass(object):
             pass
@@ -234,11 +169,59 @@ class TestProxy(unittest.TestCase):
                    xrange, xrange(0, 99),
                    lambda x: x+8 )
 
-        provs = [lazy_proxy(lambda:val) for val in values]
+        provs = [self.lazy(lambda:val) for val in values]
 
         for val,prov in zip(values, provs):
             assert(prov == val), "%r != %r" % (prov, val)
             assert(val == prov), "%r != %r" % (val, prov)
+
+
+    def test_proxy_int(self):
+
+        A = 5
+        B = self.lazy(5)
+        deliver(B)
+
+        assert(A == B)
+        assert(B == A)
+        assert((A + B) == 10)
+        assert((B + A) == 10)
+        assert((B * 2) == 10)
+        assert((2 * B) == 10)
+        assert((str(B)) == "5")
+        assert((int(B)) == 5)
+        assert((B % 1) == (5 % 1))
+        assert((B >> 1) == (5 >> 1))
+        assert((B << 1) == (5 << 1))
+        assert((B ** 2) == (5 ** 2))
+
+
+    def test_proxy_obj(self):
+        class Foo(object):
+            A = 100
+            def __init__(self):
+                self.B = 200
+            def C(self):
+                return 300
+            def __eq__(self, o):
+                return (self.A == o.A and
+                        self.B == o.B and
+                        self.C() == o.C())
+            def __ne__(self, o):
+                return not self.__eq__(o)
+
+
+        FA = Foo()
+        FB = self.lazy(Foo)
+
+        deliver(FB)
+        assert(FA == FB)
+        assert(FB == FA)
+
+        FA.B = 201
+        FB.B = 201
+        assert(FA == FB)
+        assert(FB == FA)
 
 
 #
