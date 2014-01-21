@@ -28,10 +28,10 @@ from multiprocessing.pool import Pool
 from promises import lazy, lazy_proxy
 
 
-__all__ = ( 'Executor', 'ProxyExecutor' )
+__all__ = ( 'ProcessExecutor', 'ProxyProcessExecutor' )
 
 
-class Executor(object):
+class ProcessExecutor(object):
     
     """ A way to provide multiple promises which will be delivered in
     a separate process. """
@@ -85,7 +85,7 @@ class Executor(object):
         return (self.__pool is None)
 
 
-class ProxyExecutor(Executor):
+class ProxyProcessExecutor(ProcessExecutor):
 
     """ Creates transparent proxy promises, which will deliver in a
     separate process """
