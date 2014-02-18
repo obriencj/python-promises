@@ -9,6 +9,8 @@
 .#*
 .coverage
 MANIFEST
+_build
+_deploy
 build
 dist
 htmlcov
