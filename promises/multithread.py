@@ -14,12 +14,10 @@
 
 
 """
-
 Multi-threaded Promises for Python
 
 author: Christopher O'Brien  <obriencj@gmail.com>
 license: LGPL v.3
-
 """
 
 
@@ -35,19 +33,24 @@ __all__ = ( 'ThreadExecutor', 'ProxyThreadExecutor',
 
 class ThreadExecutor(object):
 
+
     def __promise__(self, work):
         return lazy(work)
+
 
     def __init__(self, threads=None):
         self.__pool = None
         self.__threads = threads
 
+
     def __enter__(self):
         return self
+
 
     def __exit__(self, exc_type, _exc_val, _exc_tb):
         self.deliver()
         return (exc_type is None)
+
 
     def future(self, work, *args, **kwds):
         if not self.__pool:
@@ -63,6 +66,7 @@ class ThreadExecutor(object):
     def deliver(self):
         self.__pool.close()
         self.__pool is None
+
 
     def is_delivered(self):
         return (self.__pool is None)

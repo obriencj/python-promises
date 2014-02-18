@@ -14,12 +14,10 @@
 
 
 """
-
 XML RPC MultiCall Promises
 
 author: Christopher O'Brien  <obriencj@gmail.com>
 license: LGPL v.3
-
 """
 
 
@@ -31,22 +29,24 @@ __all__ = ( 'LazyMultiCall', 'ProxyMultiCall' )
 
 
 class LazyMultiCall(object):
-
-    """ A wrapper to xmlrpclib.MultiCall which allows the programmer
-    to receive promises for the calls as they are written, rather than
+    """
+    A wrapper to xmlrpclib.MultiCall which allows the programmer to
+    receive promises for the calls as they are written, rather than
     having to gather and distribute the results at the end. Forcing a
     promise to deliver will also force this MultiCall to execute all
-    of its queued xmlrpc calls."""
-
+    of its queued xmlrpc calls.
+    """
 
     def __promise__(self, work):
         return lazy(work)
 
 
     def __init__(self, server, group_calls=0):
-        """ server is an xmlrpclib.Server instance. If group_calls is
-        greater than zero, it is the upper limit on how many promises
-        will be delivered at a time. """
+        """
+        server is an xmlrpclib.Server instance. If group_calls is greater
+        than zero, it is the upper limit on how many promises will be
+        delivered at a time.
+        """
 
         self.__server = server
         self.__mclist = list()
@@ -67,8 +67,10 @@ class LazyMultiCall(object):
 
 
     def __call__(self):
-        """ Retrieve answers for any of our currently outstanding
-        promises. """
+        """
+        Retrieve answers for any of our currently outstanding
+        promises.
+        """
 
         for mc in self.__mclist:
             mc()
@@ -133,16 +135,19 @@ class LazyMultiCall(object):
 
 
 def ProxyMultiCall(LazyMultiCall):
-
-    """ A PromiseMultiCall which will returns Proxy instead of Container """
+    """
+    A PromiseMultiCall which will returns Proxy instead of Container
+    """
 
     def __promise__(self, work):
         return lazy_proxy(work)
 
 
 class MemoizedMultiCall(MultiCall):
-    """ A Memoized MultiCall, will only perform the underlying xmlrpc
-    call once, remembers the answers for all further requests """
+    """
+    A Memoized MultiCall, will only perform the underlying xmlrpc call
+    once, remembers the answers for all further requests
+    """
 
     def __init__(self, server):
         MultiCall.__init__(self, server)

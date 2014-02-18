@@ -14,16 +14,14 @@
 
 
 """
-
 Promises for Python
 
 Yet another module for doing promises in python! This time with
 transparent proxies, and other convoluted stuff that will make you
 wish someone smarter had worked on this.
 
-author: Christopher O'Brien  <obriencj@gmail.com>
-license: LGPL v.3
-
+:author: Christopher O'Brien  <obriencj@gmail.com>
+:license: LGPL v.3
 """
 
 
@@ -42,20 +40,24 @@ __all__ = ( 'Container', 'Proxy',
 
 class Container(object):
 
-    """ Simple promise mechanism. Acts as a container to the promised
-    work until delivered, and then acts as a container to the answer
-    from then on. Will invoke the promised work function exactly once,
-    but can deliver the answer multiple times.
+    """
+    Simple promise mechanism. Acts as a container to the promised work
+    until delivered, and then acts as a container to the answer from
+    then on. Will invoke the promised work function exactly once, but
+    can deliver the answer multiple times.
     """
 
     __slots__ = ('_work', '_answer')
 
+
     def __init__(self, work):
-        """ promises to provide the answer from calling work. work
-        must be either a nullary (zero-argument) callable, or a
-        non-callable value. If work is non-callable, then this promise
-        is considered immediately delivered, and the work value
-        becomes the answer. """
+        """
+        promises to provide the answer from calling work. work must be
+        either a nullary (zero-argument) callable, or a non-callable
+        value. If work is non-callable, then this promise is
+        considered immediately delivered, and the work value becomes
+        the answer.
+        """
 
         if callable(work):
             # TODO: check work arity. Must be nullary.
@@ -65,21 +67,28 @@ class Container(object):
             self._work = None
             self._answer = work
 
+
     def __del__(self):
         self._work = None
         self._answer = None
 
+
     def is_delivered(self):
-        """ True if the promised work has been called and an answer
-        has been recorded. """
+        """
+        True if the promised work has been called and an answer has been
+        recorded.
+        """
 
         return self._work is None
 
+
     def deliver(self):
-        """ Deliver on promised work. Will only execute the work if an
-        answer has not already been found. If an exception is raised
-        during the execution of work, it will be cascade up from here
-        as well. Returns the answer to the work once known. """
+        """
+        Deliver on promised work. Will only execute the work if an answer
+        has not already been found. If an exception is raised during
+        the execution of work, it will be cascade up from here as
+        well. Returns the answer to the work once known.
+        """
 
         # in theory this could be overridden to change how delivery
         # occurs, but it's probably better to use special workers
@@ -98,7 +107,9 @@ class Container(object):
 
 
 def is_promise(obj):
-    """ True if obj is a promise (either a proxy or a container) """
+    """
+    True if obj is a promise (either a proxy or a container)
+    """
 
     return (is_proxy(obj) or \
                 (hasattr(obj, "is_delivered") and
@@ -106,25 +117,31 @@ def is_promise(obj):
 
 
 def is_delivered(obj):
-    """ True if a promise has been delivered """
+    """
+    True if a promise has been delivered
+    """
 
     return is_proxy_delivered(obj) if is_proxy(obj) \
         else obj.is_delivered()
 
 
 def deliver(obj):
-    """ attempts to deliver on a promise, and returns the resulting
-    value. """
+    """
+    attempts to deliver on a promise, and returns the resulting
+    value.
+    """
 
     return deliver_proxy(obj) if is_proxy(obj) \
         else obj.deliver()
 
 
 def lazy(work, *args, **kwds):
-    """ creates a new container promise to find an answer for work. If
-    any additional arguments or keywords are provided a partial will
-    be created to pass them to the work function and the partial will
-    be stored as the nullary work. """
+    """
+    creates a new container promise to find an answer for work. If any
+    additional arguments or keywords are provided a partial will be
+    created to pass them to the work function and the partial will be
+    stored as the nullary work.
+    """
 
     if args or kwds:
         work = partial(work, *args, **kwds)
@@ -132,10 +149,12 @@ def lazy(work, *args, **kwds):
 
 
 def lazy_proxy(work, *args, **kwds):
-    """ creates a new proxy promise to find an answer for work. If any
+    """
+    creates a new proxy promise to find an answer for work. If any
     additional arguments or keywords are provided a partial will be
     created to pass them to the work function and the partial will be
-    stored as the nullary work. """
+    stored as the nullary work.
+    """
 
     if args or kwds:
         work = partial(work, *args, **kwds)
@@ -143,22 +162,28 @@ def lazy_proxy(work, *args, **kwds):
 
 
 class PromiseNotReady(Exception):
-    """ Raised when attempting to deliver on a promise whose
-    underlying delivery function hasn't been called (see
-    container_pair and proxy_pair) """
+    """
+    Raised when attempting to deliver on a promise whose underlying
+    delivery function hasn't been called (see container_pair and
+    proxy_pair)
+    """
     pass
 
 
 class PromiseAlreadyDelivered(Exception):
-    """ Raised when a paired promise's delivery function is called
-    more than once (see container_pair and proxy_pair) """
+    """
+    Raised when a paired promise's delivery function is called more
+    than once (see container_pair and proxy_pair)
+    """
     pass
 
 
 def _promise(promise_type, blocking=False):
 
-    """ This is the 'traditional' type of promise. It's a single-slot,
-    write-once value. """
+    """
+    This is the 'traditional' type of promise. It's a single-slot,
+    write-once value.
+    """
 
     # our shared state! trololol closures
     ptr = list()
@@ -206,9 +231,10 @@ def _promise(promise_type, blocking=False):
 
 def promise(blocking=False):
 
-    """ Returns a tuple of a new Container, a unary function to
-    deliver a value into that promise, and a ternary function to feed
-    an exception to the promise.
+    """
+    Returns a tuple of a new Container, a unary function to deliver a
+    value into that promise, and a ternary function to feed an
+    exception to the promise.
 
     If blocking is set to True, then any attempt to deliver on the
     promise will block until/unless a value or exception has been set
@@ -219,7 +245,6 @@ def promise(blocking=False):
     >>> setter(5)
     >>> promise.deliver()
     5
-
     """
 
     return _promise(Container, blocking=blocking)
@@ -227,7 +252,8 @@ def promise(blocking=False):
 
 def promise_proxy(blocking=False):
 
-    """ Returns a tuple of a new Proxy, a unary function to deliver a
+    """
+    Returns a tuple of a new Proxy, a unary function to deliver a
     value into that promise, and a ternary function to feed an
     exception to the promise.
 
@@ -241,7 +267,6 @@ def promise_proxy(blocking=False):
     >>> setter(5)
     >>> promise
     5
-
     """
 
     return _promise(Proxy, blocking=blocking)
