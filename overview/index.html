@@ -1,0 +1,294 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Overview of python-promises &mdash; promises 0.9.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="promises 0.9.0 documentation" href="../" />
+    <link rel="next" title="promises package" href="../promises/" />
+    <link rel="prev" title="Promises – Transparent proxies for future values" href="../" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../promises/" title="promises package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../" title="Promises – Transparent proxies for future values"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../">promises 0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="overview-of-python-promises">
+<h1>Overview of python-promises<a class="headerlink" href="#overview-of-python-promises" title="Permalink to this headline">¶</a></h1>
+<p>A <a class="reference external" href="http://python.org">Python</a> module providing container and proxy
+promises, supporting delayed linear and multi-processing delivery.</p>
+<p>This is dissimilar to
+<a class="reference external" href="http://www.python.org/dev/peps/pep-3148">PEP-3148</a>, where the focus
+is on a robust asynchronous delivery framework. We&#8217;re mostly interested
+in simple deferral and most of all, transparent proxies.</p>
+<p>At this stage this project is just a rough draft. I&#8217;ve set the version
+to 0.9.0 and am not promising any kind of API stability until 1.0.0 at
+which point I&#8217;ll tag it and cut a release. Feel free to play, fork, or
+experiment.</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/obriencj/python-promises/">python-promises on
+GitHub</a></li>
+<li>python-promises not on PyPI until version 1.0.0</li>
+</ul>
+<div class="section" id="these-python-promises">
+<h2>These Python Promises<a class="headerlink" href="#these-python-promises" title="Permalink to this headline">¶</a></h2>
+<p><em>This is very much a work in progress. I am still working out how much I
+want to explain, in what order, etc.</em></p>
+<p>So let&#8217;s start simply, assuming that while everyone is already familiar
+with the concept of a
+<a class="reference external" href="http://en.wiktionary.org/wiki/promise#Noun">promise</a> and how it
+affects them socially, they may not be clear on how the concept relates
+to programming and <a class="reference external" href="http://en.wikipedia.org/wiki/Futures_and_promises">computer
+science</a>.</p>
+<p>It&#8217;s very likely that you&#8217;re using something very akin to a promise in
+your code, and just not considering it as such. At the most basic level,
+one could conceive of a promise as nothing more than say, a memoized
+nullary function. One may have thought, &#8220;this function involves network
+access, so let&#8217;s not call it unless we absolutely need to load this
+data.&#8221; The placeholder for the value is the promise, as is the code and
+any data that would be needed to deliver on it.</p>
+<p>There&#8217;s no free computation involved. To get the value from a promise,
+the work still has to be done and delivered. But perhaps it can happen
+in another thread or process while you&#8217;re working on collating ten
+thousand similar pieces.</p>
+<p>Some languages are built on the concept of the promise and lazy
+evaluation. Others offer it as an option, but at the syntax level. And
+still others at least provide an OO representation of the concept in
+some library. Python doesn&#8217;t, by default, have any of these.</p>
+<p>In this library, the promise isn&#8217;t necessarily that the passed work will
+be executed. The promise being made is that the answer or result of a
+piece of computation will be delivered <em>if asked for</em>. As such, if no
+code ever attempts to retrieve a promised value, it&#8217;s perfectly
+acceptable for there to be no attempt to execute the underlying work.
+Put another way, promises are not the same as tasks.</p>
+</div>
+<div class="section" id="lazy-container">
+<h2>Lazy Container<a class="headerlink" href="#lazy-container" title="Permalink to this headline">¶</a></h2>
+<p>A lazy container is a simple, object-oriented placeholder. It can be
+created by invoking the <tt class="docutils literal"><span class="pre">lazy</span></tt> function, passing a nullary work
+function as the single argument. When delivered, the container will call
+that work and collect the result as its answer. Any further invocations
+of deliver will return the answer without re-executing the work.
+However, if an exception is raised by the work during delivery the
+container will not be considered as delivered. In the case of a
+transient issue (such as a time-out), delivery can be attempted again
+until an answer is finally returned.</p>
+</div>
+<div class="section" id="lazy-proxy">
+<h2>Lazy Proxy<a class="headerlink" href="#lazy-proxy" title="Permalink to this headline">¶</a></h2>
+<p>Proxies are a way to write promises without <em>looking</em> like you&#8217;re
+writing promises. You treat the proxy as though it were the answer
+itself. A proxy is created by invoking the <tt class="docutils literal"><span class="pre">lazy_proxy</span></tt> function, and
+passing a nullary work function as the single argument. If your work
+delivers an int, then treat the proxy like an int. If your work delivers
+a dictionary, then treat the proxy like it were a dictionary.</p>
+<p>A proxy tries fairly hard to act like the delivered value, by passing
+along almost every conceivable call to the underlying answer.</p>
+<p>However, proxies are still their own type. As such, any code that is
+written which does a type check will potentially misbehave.</p>
+<p>An example of this is the builtin
+<a class="reference external" href="http://docs.python.org/2/library/stdtypes.html#set-types-set-frozenset">set</a>
+type. Below we show that the proxy will happily pass the
+<a class="reference external" href="http://docs.python.org/2/c-api/typeobj.html#PyTypeObject.tp_richcompare">richcompare</a>
+call along to the underlying set and affirm that A and X are equal.
+However, reverse the operands and X will first
+<a class="reference external" href="http://hg.python.org/cpython/file/779de7b4909b/Objects/setobject.c#l1794">check</a>
+that the arguments to its richcompare call are another set instance.
+Since A is not a set (A is an instance of promises.Proxy), X&#8217;s
+richcompare immediately returns False, indicating that X and A are not
+equal.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">promises</span> <span class="kn">import</span> <span class="n">lazy_proxy</span><span class="p">,</span> <span class="n">deliver</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">lazy_proxy</span><span class="p">(</span><span class="nb">set</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span>
+<span class="go">set([1, 2, 3])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span>
+<span class="go">set([1, 2, 3])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">==</span> <span class="n">X</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">==</span> <span class="n">A</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">==</span> <span class="n">deliver</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="http://python.org">Python</a> 2.6 or later (no support for Python 3
+unless someone else wants to hack in all the macros for the proxy
+code)</li>
+</ul>
+</div>
+<div class="section" id="install">
+<h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
+<p>This module uses setuptools, so simply run</p>
+<div class="highlight-python"><div class="highlight"><pre>python setup.py install
+</pre></div>
+</div>
+</div>
+<div class="section" id="related">
+<h2>Related<a class="headerlink" href="#related" title="Permalink to this headline">¶</a></h2>
+<p>Lots of alternative implementations following different wavelengths of
+this concept. Here are some for your perusal.</p>
+<ul class="simple">
+<li><a class="reference external" href="http://docs.python.org/dev/library/concurrent.futures.html">concurrent.futures</a>
+- <a class="reference external" href="http://docs.python.org/dev/whatsnew/3.4.html">Python 3.4</a> (in
+Beta) includes <a class="reference external" href="http://www.python.org/dev/peps/pep-3148">PEP-3148</a></li>
+<li><a class="reference external" href="https://pypi.python.org/pypi/futureutils">futureutils</a> -
+Introduces futures and promises into iterators</li>
+<li><a class="reference external" href="https://github.com/xogeny/aplus">aplus</a> - Promises/A+
+specification in Python</li>
+<li><a class="reference external" href="https://code.google.com/p/promised/">promised</a> - Python &#8220;promise&#8221;
+for output of asynchronous operations, and callback chaining.</li>
+</ul>
+</div>
+<div class="section" id="contact">
+<h2>Contact<a class="headerlink" href="#contact" title="Permalink to this headline">¶</a></h2>
+<p>Christopher O&#8217;Brien <a class="reference external" href="mailto:obriencj&#37;&#52;&#48;gmail&#46;com">obriencj<span>&#64;</span>gmail<span>&#46;</span>com</a></p>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>This library is free software; you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 3 of the License, or (at
+your option) any later version.</p>
+<p>This library is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+General Public License for more details.</p>
+<p>You should have received a copy of the GNU Lesser General Public License
+along with this library; if not, see <a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Overview of python-promises</a><ul>
+<li><a class="reference internal" href="#these-python-promises">These Python Promises</a></li>
+<li><a class="reference internal" href="#lazy-container">Lazy Container</a></li>
+<li><a class="reference internal" href="#lazy-proxy">Lazy Proxy</a></li>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#install">Install</a></li>
+<li><a class="reference internal" href="#related">Related</a></li>
+<li><a class="reference internal" href="#contact">Contact</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../"
+                        title="previous chapter">Promises &#8211; Transparent proxies for future values</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../promises/"
+                        title="next chapter">promises package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/overview.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search/" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../promises/" title="promises package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../" title="Promises – Transparent proxies for future values"
+             >previous</a> |</li>
+        <li><a href="../">promises 0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Christopher O&#39;Brien.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-47351906-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

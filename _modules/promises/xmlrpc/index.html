@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>promises.xmlrpc &mdash; promises 0.9.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="promises 0.9.0 documentation" href="../../../" />
+    <link rel="up" title="promises" href="../" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../">promises 0.9.0 documentation</a> &raquo;</li>
+          <li><a href="../../" >Module code</a> &raquo;</li>
+          <li><a href="../" accesskey="U">promises</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for promises.xmlrpc</h1><div class="highlight"><pre>
+<span class="c"># This library is free software; you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU Lesser General Public License as</span>
+<span class="c"># published by the Free Software Foundation; either version 3 of the</span>
+<span class="c"># License, or (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># This library is distributed in the hope that it will be useful, but</span>
+<span class="c"># WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU</span>
+<span class="c"># Lesser General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU Lesser General Public</span>
+<span class="c"># License along with this library; if not, see</span>
+<span class="c"># &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">XML RPC MultiCall Promises</span>
+
+<span class="sd">author: Christopher O&#39;Brien  &lt;obriencj@gmail.com&gt;</span>
+<span class="sd">license: LGPL v.3</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span> <span class="nn">promises</span> <span class="kn">import</span> <span class="n">lazy</span><span class="p">,</span> <span class="n">lazy_proxy</span>
+<span class="kn">from</span> <span class="nn">xmlrpclib</span> <span class="kn">import</span> <span class="n">MultiCall</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span> <span class="s">&#39;LazyMultiCall&#39;</span><span class="p">,</span> <span class="s">&#39;ProxyMultiCall&#39;</span> <span class="p">)</span>
+
+
+<div class="viewcode-block" id="LazyMultiCall"><a class="viewcode-back" href="../../../promises/#promises.xmlrpc.LazyMultiCall">[docs]</a><span class="k">class</span> <span class="nc">LazyMultiCall</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot; A wrapper to xmlrpclib.MultiCall which allows the programmer</span>
+<span class="sd">    to receive promises for the calls as they are written, rather than</span>
+<span class="sd">    having to gather and distribute the results at the end. Forcing a</span>
+<span class="sd">    promise to deliver will also force this MultiCall to execute all</span>
+<span class="sd">    of its queued xmlrpc calls.&quot;&quot;&quot;</span>
+
+
+    <span class="k">def</span> <span class="nf">__promise__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lazy</span><span class="p">(</span><span class="n">work</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server</span><span class="p">,</span> <span class="n">group_calls</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; server is an xmlrpclib.Server instance. If group_calls is</span>
+<span class="sd">        greater than zero, it is the upper limit on how many promises</span>
+<span class="sd">        will be delivered at a time. &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__server</span> <span class="o">=</span> <span class="n">server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mclist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mc</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">group_calls</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">group_calls</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__group_calls</span> <span class="o">=</span> <span class="n">group_calls</span> <span class="k">if</span> <span class="n">group_calls</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+
+
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">_exc_val</span><span class="p">,</span> <span class="n">_exc_tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">exc_type</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Retrieve answers for any of our currently outstanding</span>
+<span class="sd">        promises. &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">mc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mclist</span><span class="p">:</span>
+            <span class="n">mc</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">promisary</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+            <span class="c"># make sure we have an underlying memoized multicall</span>
+            <span class="n">multicall</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_multicall</span><span class="p">()</span>
+
+            <span class="c"># enqueue the call in the multicall</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">multicall</span><span class="p">,</span> <span class="n">name</span><span class="p">)(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+
+            <span class="c"># this is how we&#39;ll relate back to our answers from the</span>
+            <span class="c"># current multicall.</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__counter</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c"># the resulting promise will keep a reference to the</span>
+            <span class="c"># particular memoized multicall, as that is where it will</span>
+            <span class="c"># want to get its answer from.</span>
+            <span class="n">promised</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__promise__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__deliver_on</span><span class="p">,</span> <span class="n">multicall</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+
+            <span class="c"># if this promise puts us at our threhold for grouping</span>
+            <span class="c"># calls, then it&#39;s time to start using a new mc</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__group_calls</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__group_calls</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__counter</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__mc</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="k">return</span> <span class="n">promised</span>
+
+        <span class="n">promisary</span><span class="o">.</span><span class="n">func_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">return</span> <span class="n">promisary</span>
+
+
+    <span class="k">def</span> <span class="nf">__get_multicall</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">multicall</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mc</span>
+        <span class="k">if</span> <span class="n">multicall</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">multicall</span> <span class="o">=</span> <span class="n">MemoizedMultiCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__server</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__mclist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">multicall</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__mc</span> <span class="o">=</span> <span class="n">multicall</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">multicall</span>
+
+
+    <span class="k">def</span> <span class="nf">__deliver_on</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">assert</span><span class="p">(</span><span class="n">mc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="c"># if the promise is against the current MC, then we need to</span>
+        <span class="c"># deliver on it and clear ourselves to create a new</span>
+        <span class="c"># one. Otherwise, use the memoized answers for the already</span>
+        <span class="c"># delivered MC. Then we return the result at the given index.</span>
+        <span class="k">if</span> <span class="n">mc</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mc</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__mc</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c"># a great feature of this is that the delivery or access of</span>
+        <span class="c"># the promise will also raise the underlying fault if there</span>
+        <span class="c"># happened to be one</span>
+        <span class="k">return</span> <span class="n">mc</span><span class="p">()[</span><span class="n">index</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="ProxyMultiCall"><a class="viewcode-back" href="../../../promises/#promises.xmlrpc.ProxyMultiCall">[docs]</a><span class="k">def</span> <span class="nf">ProxyMultiCall</span><span class="p">(</span><span class="n">LazyMultiCall</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot; A PromiseMultiCall which will returns Proxy instead of Container &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__promise__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lazy_proxy</span><span class="p">(</span><span class="n">work</span><span class="p">)</span>
+
+</div>
+<span class="k">class</span> <span class="nc">MemoizedMultiCall</span><span class="p">(</span><span class="n">MultiCall</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Memoized MultiCall, will only perform the underlying xmlrpc</span>
+<span class="sd">    call once, remembers the answers for all further requests &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server</span><span class="p">):</span>
+        <span class="n">MultiCall</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__answers</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__answers</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__answers</span> <span class="o">=</span> <span class="n">MultiCall</span><span class="o">.</span><span class="n">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__answers</span>
+
+
+<span class="c">#</span>
+<span class="c"># The end.</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search/" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../../np-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../">promises 0.9.0 documentation</a> &raquo;</li>
+          <li><a href="../../" >Module code</a> &raquo;</li>
+          <li><a href="../" >promises</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Christopher O&#39;Brien.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-47351906-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

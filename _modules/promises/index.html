@@ -1,0 +1,360 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>promises &mdash; promises 0.9.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="promises 0.9.0 documentation" href="../../" />
+    <link rel="up" title="Module code" href="../" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../np-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../">promises 0.9.0 documentation</a> &raquo;</li>
+          <li><a href="../" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for promises</h1><div class="highlight"><pre>
+<span class="c"># This library is free software; you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU Lesser General Public License as</span>
+<span class="c"># published by the Free Software Foundation; either version 3 of the</span>
+<span class="c"># License, or (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># This library is distributed in the hope that it will be useful, but</span>
+<span class="c"># WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU</span>
+<span class="c"># Lesser General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU Lesser General Public</span>
+<span class="c"># License along with this library; if not, see</span>
+<span class="c"># &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">Promises for Python</span>
+
+<span class="sd">Yet another module for doing promises in python! This time with</span>
+<span class="sd">transparent proxies, and other convoluted stuff that will make you</span>
+<span class="sd">wish someone smarter had worked on this.</span>
+
+<span class="sd">author: Christopher O&#39;Brien  &lt;obriencj@gmail.com&gt;</span>
+<span class="sd">license: LGPL v.3</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span> <span class="nn">_proxy</span> <span class="kn">import</span> <span class="n">Proxy</span>
+<span class="kn">from</span> <span class="nn">_proxy</span> <span class="kn">import</span> <span class="n">is_proxy</span><span class="p">,</span> <span class="n">is_proxy_delivered</span><span class="p">,</span> <span class="n">deliver_proxy</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Event</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span> <span class="s">&#39;Container&#39;</span><span class="p">,</span> <span class="s">&#39;Proxy&#39;</span><span class="p">,</span>
+            <span class="s">&#39;lazy&#39;</span><span class="p">,</span> <span class="s">&#39;lazy_proxy&#39;</span><span class="p">,</span>
+            <span class="s">&#39;promise&#39;</span><span class="p">,</span> <span class="s">&#39;promise_proxy&#39;</span><span class="p">,</span>
+            <span class="s">&#39;PromiseNotReady&#39;</span><span class="p">,</span> <span class="s">&#39;PromiseAlreadyDelivered&#39;</span><span class="p">,</span>
+            <span class="s">&#39;is_promise&#39;</span><span class="p">,</span> <span class="s">&#39;is_delivered&#39;</span><span class="p">,</span> <span class="s">&#39;deliver&#39;</span><span class="p">,</span> <span class="p">)</span>
+
+
+<div class="viewcode-block" id="Container"><a class="viewcode-back" href="../../promises/#promises.Container">[docs]</a><span class="k">class</span> <span class="nc">Container</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot; Simple promise mechanism. Acts as a container to the promised</span>
+<span class="sd">    work until delivered, and then acts as a container to the answer</span>
+<span class="sd">    from then on. Will invoke the promised work function exactly once,</span>
+<span class="sd">    but can deliver the answer multiple times.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;_work&#39;</span><span class="p">,</span> <span class="s">&#39;_answer&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; promises to provide the answer from calling work. work</span>
+<span class="sd">        must be either a nullary (zero-argument) callable, or a</span>
+<span class="sd">        non-callable value. If work is non-callable, then this promise</span>
+<span class="sd">        is considered immediately delivered, and the work value</span>
+<span class="sd">        becomes the answer. &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">work</span><span class="p">):</span>
+            <span class="c"># TODO: check work arity. Must be nullary.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_work</span> <span class="o">=</span> <span class="n">work</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_answer</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_work</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_answer</span> <span class="o">=</span> <span class="n">work</span>
+
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_work</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_answer</span> <span class="o">=</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="Container.is_delivered"><a class="viewcode-back" href="../../promises/#promises.Container.is_delivered">[docs]</a>    <span class="k">def</span> <span class="nf">is_delivered</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; True if the promised work has been called and an answer</span>
+<span class="sd">        has been recorded. &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_work</span> <span class="ow">is</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="Container.deliver"><a class="viewcode-back" href="../../promises/#promises.Container.deliver">[docs]</a>    <span class="k">def</span> <span class="nf">deliver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Deliver on promised work. Will only execute the work if an</span>
+<span class="sd">        answer has not already been found. If an exception is raised</span>
+<span class="sd">        during the execution of work, it will be cascade up from here</span>
+<span class="sd">        as well. Returns the answer to the work once known. &quot;&quot;&quot;</span>
+
+        <span class="c"># in theory this could be overridden to change how delivery</span>
+        <span class="c"># occurs, but it&#39;s probably better to use special workers</span>
+        <span class="c"># instead.</span>
+
+        <span class="n">work</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_work</span>
+
+        <span class="k">if</span> <span class="n">work</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># note that if the work raised an exception, we won&#39;t</span>
+            <span class="c"># consider ourselves as delivered, meaning we can attempt</span>
+            <span class="c"># delivery again later. This is a feature!</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_answer</span> <span class="o">=</span> <span class="n">work</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_work</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_answer</span>
+
+</div></div>
+<div class="viewcode-block" id="is_promise"><a class="viewcode-back" href="../../promises/#promises.is_promise">[docs]</a><span class="k">def</span> <span class="nf">is_promise</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; True if obj is a promise (either a proxy or a container) &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">is_proxy</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">or</span> \
+                <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s">&quot;is_delivered&quot;</span><span class="p">)</span> <span class="ow">and</span>
+                 <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s">&quot;deliver&quot;</span><span class="p">)))</span>
+
+</div>
+<div class="viewcode-block" id="is_delivered"><a class="viewcode-back" href="../../promises/#promises.is_delivered">[docs]</a><span class="k">def</span> <span class="nf">is_delivered</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; True if a promise has been delivered &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">is_proxy_delivered</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_proxy</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> \
+        <span class="k">else</span> <span class="n">obj</span><span class="o">.</span><span class="n">is_delivered</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="deliver"><a class="viewcode-back" href="../../promises/#promises.deliver">[docs]</a><span class="k">def</span> <span class="nf">deliver</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; attempts to deliver on a promise, and returns the resulting</span>
+<span class="sd">    value. &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">deliver_proxy</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_proxy</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> \
+        <span class="k">else</span> <span class="n">obj</span><span class="o">.</span><span class="n">deliver</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="lazy"><a class="viewcode-back" href="../../promises/#promises.lazy">[docs]</a><span class="k">def</span> <span class="nf">lazy</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; creates a new container promise to find an answer for work. If</span>
+<span class="sd">    any additional arguments or keywords are provided a partial will</span>
+<span class="sd">    be created to pass them to the work function and the partial will</span>
+<span class="sd">    be stored as the nullary work. &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">or</span> <span class="n">kwds</span><span class="p">:</span>
+        <span class="n">work</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Container</span><span class="p">(</span><span class="n">work</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="lazy_proxy"><a class="viewcode-back" href="../../promises/#promises.lazy_proxy">[docs]</a><span class="k">def</span> <span class="nf">lazy_proxy</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; creates a new proxy promise to find an answer for work. If any</span>
+<span class="sd">    additional arguments or keywords are provided a partial will be</span>
+<span class="sd">    created to pass them to the work function and the partial will be</span>
+<span class="sd">    stored as the nullary work. &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">or</span> <span class="n">kwds</span><span class="p">:</span>
+        <span class="n">work</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Proxy</span><span class="p">(</span><span class="n">work</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="PromiseNotReady"><a class="viewcode-back" href="../../promises/#promises.PromiseNotReady">[docs]</a><span class="k">class</span> <span class="nc">PromiseNotReady</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Raised when attempting to deliver on a promise whose</span>
+<span class="sd">    underlying delivery function hasn&#39;t been called (see</span>
+<span class="sd">    container_pair and proxy_pair) &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="PromiseAlreadyDelivered"><a class="viewcode-back" href="../../promises/#promises.PromiseAlreadyDelivered">[docs]</a><span class="k">class</span> <span class="nc">PromiseAlreadyDelivered</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Raised when a paired promise&#39;s delivery function is called</span>
+<span class="sd">    more than once (see container_pair and proxy_pair) &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_promise</span><span class="p">(</span><span class="n">promise_type</span><span class="p">,</span> <span class="n">blocking</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot; This is the &#39;traditional&#39; type of promise. It&#39;s a single-slot,</span>
+<span class="sd">    write-once value. &quot;&quot;&quot;</span>
+
+    <span class="c"># our shared state! trololol closures</span>
+    <span class="n">ptr</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">exc</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span> <span class="k">if</span> <span class="n">blocking</span> <span class="k">else</span> <span class="bp">None</span>
+
+    <span class="c"># for getting a value to deliver to the promise, or for raising an</span>
+    <span class="c"># exception if one was set. This is what will be called by deliver</span>
+    <span class="k">def</span> <span class="nf">promise_getter</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">event</span><span class="p">:</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">ptr</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ptr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">event</span><span class="p">:</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">exc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">exc</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">exc</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PromiseNotReady</span><span class="p">()</span>
+
+    <span class="n">promise</span> <span class="o">=</span> <span class="n">promise_type</span><span class="p">(</span><span class="n">promise_getter</span><span class="p">)</span>
+
+    <span class="c"># for setting the promise&#39;s value.</span>
+    <span class="k">def</span> <span class="nf">promise_setter</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">ptr</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PromiseAlreadyDelivered</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">exc</span><span class="p">[:]</span>
+            <span class="n">ptr</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">(</span><span class="n">value</span><span class="p">,)</span>
+            <span class="k">if</span> <span class="n">event</span><span class="p">:</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+            <span class="n">deliver</span><span class="p">(</span><span class="n">promise</span><span class="p">)</span>
+
+    <span class="c"># for setting the promise&#39;s exception</span>
+    <span class="k">def</span> <span class="nf">promise_seterr</span><span class="p">(</span><span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">ptr</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PromiseAlreadyDelivered</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exc</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span>
+            <span class="k">if</span> <span class="n">event</span><span class="p">:</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">promise</span><span class="p">,</span> <span class="n">promise_setter</span><span class="p">,</span> <span class="n">promise_seterr</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="promise"><a class="viewcode-back" href="../../promises/#promises.promise">[docs]</a><span class="k">def</span> <span class="nf">promise</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot; Returns a tuple of a new Container, a unary function to</span>
+<span class="sd">    deliver a value into that promise, and a ternary function to feed</span>
+<span class="sd">    an exception to the promise.</span>
+
+<span class="sd">    If blocking is set to True, then any attempt to deliver on the</span>
+<span class="sd">    promise will block until/unless a value or exception has been set</span>
+<span class="sd">    via the setter or seterr functions.</span>
+
+<span class="sd">    example:</span>
+<span class="sd">    &gt;&gt;&gt; promise,setter,seterr = settable_container()</span>
+<span class="sd">    &gt;&gt;&gt; setter(5)</span>
+<span class="sd">    &gt;&gt;&gt; promise.deliver()</span>
+<span class="sd">    5</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">_promise</span><span class="p">(</span><span class="n">Container</span><span class="p">,</span> <span class="n">blocking</span><span class="o">=</span><span class="n">blocking</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="promise_proxy"><a class="viewcode-back" href="../../promises/#promises.promise_proxy">[docs]</a><span class="k">def</span> <span class="nf">promise_proxy</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot; Returns a tuple of a new Proxy, a unary function to deliver a</span>
+<span class="sd">    value into that promise, and a ternary function to feed an</span>
+<span class="sd">    exception to the promise.</span>
+
+<span class="sd">    If blocking is set to True, then any attempt to deliver on the</span>
+<span class="sd">    promise (including accessing its members) will block until/unless</span>
+<span class="sd">    a value or exception has been set via the setter or seterr</span>
+<span class="sd">    functions.</span>
+
+<span class="sd">    example:</span>
+<span class="sd">    &gt;&gt;&gt; promise,setter,seterr = settable_proxy()</span>
+<span class="sd">    &gt;&gt;&gt; setter(5)</span>
+<span class="sd">    &gt;&gt;&gt; promise</span>
+<span class="sd">    5</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">_promise</span><span class="p">(</span><span class="n">Proxy</span><span class="p">,</span> <span class="n">blocking</span><span class="o">=</span><span class="n">blocking</span><span class="p">)</span>
+
+
+<span class="c">#</span>
+<span class="c"># The end.</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search/" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../np-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../">promises 0.9.0 documentation</a> &raquo;</li>
+          <li><a href="../" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Christopher O&#39;Brien.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-47351906-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>
