@@ -49,12 +49,16 @@ class Dummy(object):
 
 
 class XMLRPCHarness(object):
+    """
+    A setUp/tearDown harness that will provide an XMLRPC Server for us
+    to test against.
+    """
 
     def __init__(self, *args, **kwds):
         super(XMLRPCHarness, self).__init__(*args, **kwds)
         self.server = None
-        self.dummy = None
         self.thread = None
+        self.dummy = None
 
 
     def setUp(self):
@@ -63,7 +67,7 @@ class XMLRPCHarness(object):
 
         self.dummy = Dummy()
 
-        self.server = SimpleXMLRPCServer((HOST, PORT))
+        self.server = SimpleXMLRPCServer((HOST, PORT), logRequests=False)
         self.server.register_function(self.dummy.get, "get")
         self.server.register_function(self.dummy.steal, "steal")
         self.server.register_multicall_functions()
@@ -107,9 +111,21 @@ class TestLazyMultiCall(XMLRPCHarness, TestCase):
         a = mc.steal(1)
         b = mc.steal(2)
 
+        # check that the delivery has not yet happened
+        self.assertEqual(self.dummy.get(1), 1)
+        self.assertEqual(self.dummy.get(2), 2)
+
+        # deliver the first promise and check that the value is what
+        # we expected
         self.assertEqual(deliver(a), 1)
+
+        # check that the call happened for both queued promises, which
+        # should have destructively altered the dummy entries for
+        # those indexes
         self.assertEqual(self.dummy.get(1), None)
         self.assertEqual(self.dummy.get(2), None)
+
+        # check that the second promise has the correct value
         self.assertEqual(deliver(b), 2)
 
 
