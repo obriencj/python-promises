@@ -31,10 +31,6 @@ from xmlrpclib import ServerProxy
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 
 
-HOST = "localhost"
-PORT = 8999
-
-
 class Dummy(object):
     def __init__(self):
         self.data = list(xrange(0,10))
@@ -54,6 +50,10 @@ class XMLRPCHarness(object):
     to test against.
     """
 
+    HOST = "localhost"
+    PORT = 8999
+
+
     def __init__(self, *args, **kwds):
         super(XMLRPCHarness, self).__init__(*args, **kwds)
         self.server = None
@@ -67,7 +67,8 @@ class XMLRPCHarness(object):
 
         self.dummy = Dummy()
 
-        self.server = SimpleXMLRPCServer((HOST, PORT), logRequests=False)
+        self.server = SimpleXMLRPCServer((self.HOST, self.PORT),
+                                         logRequests=False)
         self.server.register_function(self.dummy.get, "get")
         self.server.register_function(self.dummy.steal, "steal")
         self.server.register_multicall_functions()
@@ -95,14 +96,14 @@ class XMLRPCHarness(object):
         assert(self.server is not None)
         assert(self.thread is not None)
 
-        return ServerProxy("http://%s:%i" % (HOST,PORT))
+        return ServerProxy("http://%s:%i" % (self.HOST, self.PORT))
 
 
 class TestLazyMultiCall(XMLRPCHarness, TestCase):
 
 
-    def get_multicall(self):
-        return LazyMultiCall(self.get_client())
+    def get_multicall(self, *args, **kwds):
+        return LazyMultiCall(self.get_client(), *args, **kwds)
 
 
     def test_delivery(self):
@@ -129,14 +130,42 @@ class TestLazyMultiCall(XMLRPCHarness, TestCase):
         self.assertEqual(deliver(b), 2)
 
 
-    def test_maxcalls(self):
-        mc = self.get_multicall()
+    def test_group_calls(self):
+        # have our multicall deliver on promises in groups of 2
+        mc = self.get_multicall(group_calls=2)
+
+        # get promises for a bunch of steal calls, each of which has
+        # side effects we can test for on the dummy.
+        stolen = [mc.steal(x) for x in xrange(0, 10)]
+
+        dummy = self.dummy
+
+        self.assertEqual(deliver(stolen[0]), 0)
+        self.assertEqual(dummy.get(0), None)
+        self.assertEqual(dummy.get(1), None)
+        self.assertEqual(deliver(stolen[1]), 1)
+
+        # having delivered on 0 and 1, 2 should not yet have been
+        # delivered, so the dummy 2 should still be 2 rather than None
+        self.assertEqual(dummy.get(2), 2)
+        self.assertEqual(dummy.get(3), 3)
+
+        self.assertEqual(deliver(stolen[4]), 4)
+        self.assertEqual(dummy.get(4), None)
+        self.assertEqual(dummy.get(5), None)
+        self.assertEqual(deliver(stolen[5]), 5)
+
+        # now having delivered on 4 and 5, 2 should still not yet have
+        # been delivered, so the dummy 2 should still be 2 rather than
+        # None
+        self.assertEqual(dummy.get(2), 2)
+        self.assertEqual(dummy.get(3), 3)
 
 
 class TestProxyMultiCall(TestLazyMultiCall):
 
-    def get_multicall(self):
-        return ProxyMultiCall(self.get_client())
+    def get_multicall(self, *args, **kwds):
+        return ProxyMultiCall(self.get_client(), *args, **kwds)
 
 
 #
