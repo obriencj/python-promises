@@ -35,10 +35,15 @@ class LazyMultiCall(object):
     having to gather and distribute the results at the end. Forcing a
     promise to deliver will also force this MultiCall to execute all
     of its queued xmlrpc calls.
+
+    As with all lazy calls, if nothing requests delivery of the
+    promised result, it is possible for the work to never be
+    executed. As such, it is inappropriate to expect the queued calls
+    to be triggered in any particular order, or at all.
     """
 
-    def __promise__(self, work):
-        return lazy(work)
+    def __promise__(self, work, *args, **kwds):
+        return lazy(work, *args, **kwds)
 
 
     def __init__(self, server, group_calls=0):
@@ -134,13 +139,13 @@ class LazyMultiCall(object):
         return mc()[index]
 
 
-def ProxyMultiCall(LazyMultiCall):
+class ProxyMultiCall(LazyMultiCall):
     """
     A PromiseMultiCall which will returns Proxy instead of Container
     """
 
-    def __promise__(self, work):
-        return lazy_proxy(work)
+    def __promise__(self, work, *args, **kwds):
+        return lazy_proxy(work, *args, **kwds)
 
 
 class MemoizedMultiCall(MultiCall):
@@ -152,6 +157,7 @@ class MemoizedMultiCall(MultiCall):
     def __init__(self, server):
         MultiCall.__init__(self, server)
         self.__answers = None
+
 
     def __call__(self):
         if self.__answers is None:

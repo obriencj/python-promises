@@ -25,38 +25,103 @@ license: LGPL v.3
 
 from promises import *
 from promises.xmlrpc import *
+from threading import Thread
 from unittest import TestCase
+from xmlrpclib import ServerProxy
+from SimpleXMLRPCServer import SimpleXMLRPCServer
 
 
-class TestLazyMultiCall(TestCase):
+HOST = "localhost"
+PORT = 8999
+
+
+class Dummy(object):
+    def __init__(self):
+        self.data = list(xrange(0,10))
+
+    def get(self, index):
+        return self.data[index]
+
+    def steal(self, index):
+        value = self.data[index]
+        self.data[index] = None
+        return value
+
+
+class XMLRPCHarness(object):
 
     def __init__(self, *args, **kwds):
-        super(TestLazyMultiCall, self).__init__(*args, **kwds)
+        super(XMLRPCHarness, self).__init__(*args, **kwds)
+        self.server = None
+        self.dummy = None
+        self.thread = None
+
+
+    def setUp(self):
+        assert(self.server is None)
+        assert(self.thread is None)
+
+        self.dummy = Dummy()
+
+        self.server = SimpleXMLRPCServer((HOST, PORT))
+        self.server.register_function(self.dummy.get, "get")
+        self.server.register_function(self.dummy.steal, "steal")
+        self.server.register_multicall_functions()
+
+        self.thread = Thread(target=self.server.serve_forever,
+                             kwargs={"poll_interval":0.2})
+        self.thread.start()
+
+
+    def tearDown(self):
+        assert(self.server is not None)
+        assert(self.thread is not None)
+
+        self.server.shutdown()
+        self.server.socket.close()
         self.server = None
 
+        self.dummy = None
 
-    def multicall(self):
-        return LazyMultiCall(self.server)
-
-
-    def get_server(self):
-        return self.server
+        self.thread.join()
+        self.thread = None
 
 
-    def test_constructor(self):
-        mc = self.multicall()
+    def get_client(self):
+        assert(self.server is not None)
+        assert(self.thread is not None)
+
+        return ServerProxy("http://%s:%i" % (HOST,PORT))
+
+
+class TestLazyMultiCall(XMLRPCHarness, TestCase):
+
+
+    def get_multicall(self):
+        return LazyMultiCall(self.get_client())
+
+
+    def test_delivery(self):
+        mc = self.get_multicall()
+
+        a = mc.steal(1)
+        b = mc.steal(2)
+
+        self.assertEqual(deliver(a), 1)
+        self.assertEqual(self.dummy.get(1), None)
+        self.assertEqual(self.dummy.get(2), None)
+        self.assertEqual(deliver(b), 2)
 
 
     def test_maxcalls(self):
-        mc = self.multicall()
+        mc = self.get_multicall()
 
 
 class TestProxyMultiCall(TestLazyMultiCall):
 
-    def multicall(self):
-        return ProxyMultiCall(self.server)
+    def get_multicall(self):
+        return ProxyMultiCall(self.get_client())
 
 
 #
 # The end.
-

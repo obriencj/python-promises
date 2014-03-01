@@ -14,12 +14,10 @@
 
 
 """
-
 Unit Tests for python-promises
 
 author: Christopher O'Brien  <obriencj@gmail.com>
 license: LGPL v.3
-
 """
 
 
@@ -29,19 +27,27 @@ import unittest
 from promises import *
 
 
-def assert_called_once(work):
-    """ helps assert that work is only called once """
+def assert_called_once(work, assertfun=None):
+    """
+    helper to assert that work is only called once
+    """
 
     called = [False]
     def do_work_once():
-        assert(called[0] is False)
+        if assertfun is not None:
+            assertfun(called[0] is False)
+        else:
+            assert(called[0] is False)
+
         called[0] = True
         return work()
     return do_work_once
 
 
 def create_exc_tb(exception=None):
-    """ generate an exception info triplet """
+    """
+    generate an exception info triplet
+    """
 
     if exception is None:
         exception = Exception("dummy exception")
@@ -53,8 +59,9 @@ def create_exc_tb(exception=None):
 
 
 class TestContainer(unittest.TestCase):
-
-    """ tests for the ContainerPromise class """
+    """
+    tests for the ContainerPromise class
+    """
 
 
     def lazy(self, work, *args, **kwds):
@@ -143,8 +150,9 @@ class TestContainer(unittest.TestCase):
 
 
 class TestProxy(TestContainer):
-
-    """ tests for the ProxyPromise class """
+    """
+    tests for the ProxyPromise class
+    """
 
 
     def lazy(self, work, *args, **kwds):
@@ -177,6 +185,7 @@ class TestProxy(TestContainer):
 
 
     def test_proxy_int(self):
+        # transparent proxy of an int
 
         A = 5
         B = self.lazy(5)
@@ -197,6 +206,8 @@ class TestProxy(TestContainer):
 
 
     def test_proxy_obj(self):
+        # transparent proxy of an object
+
         class Foo(object):
             A = 100
             def __init__(self):
@@ -209,7 +220,6 @@ class TestProxy(TestContainer):
                         self.C() == o.C())
             def __ne__(self, o):
                 return not self.__eq__(o)
-
 
         FA = Foo()
         FB = self.lazy(Foo)
