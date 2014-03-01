@@ -162,6 +162,26 @@ class TestLazyMultiCall(XMLRPCHarness, TestCase):
         self.assertEqual(dummy.get(3), 3)
 
 
+    def test_grouped_with(self):
+
+        dummy = self.dummy
+
+        with self.get_multicall(group_calls=3) as mc:
+            stolen = [mc.steal(x) for x in xrange(0, 10)]
+
+            # we've collected all the promises, but not delivered yet
+            self.assertEqual(dummy.data, list(xrange(0, 10)))
+
+        # now we've delivered, since the managed interface was used
+        # and has closed. Thus the desrtuctive steal calls have all
+        # happened
+        self.assertEqual(dummy.data, ([None] * 10))
+
+        # let's make sure the delivered data is what it should be
+        self.assertEqual([deliver(val) for val in stolen],
+                         list(xrange(0, 10)))
+
+
 class TestProxyMultiCall(TestLazyMultiCall):
 
     def get_multicall(self, *args, **kwds):

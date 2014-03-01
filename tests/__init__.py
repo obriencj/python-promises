@@ -27,23 +27,6 @@ import unittest
 from promises import *
 
 
-def assert_called_once(work, assertfun=None):
-    """
-    helper to assert that work is only called once
-    """
-
-    called = [False]
-    def do_work_once():
-        if assertfun is not None:
-            assertfun(called[0] is False)
-        else:
-            assert(called[0] is False)
-
-        called[0] = True
-        return work()
-    return do_work_once
-
-
 def create_exc_tb(exception=None):
     """
     generate an exception info triplet
@@ -68,8 +51,21 @@ class TestContainer(unittest.TestCase):
         return lazy(work, *args, **kwds)
 
 
-    def promise(self):
-        return promise()
+    def promise(self, blocking=False):
+        return promise(blocking=blocking)
+
+
+    def assert_called_once(self, work):
+        """
+        helper to assert that work is only called once
+        """
+
+        called = [False]
+        def do_work_once():
+            self.assertFalse(called[0], "do_work_once already called")
+            called[0] = True
+            return work()
+        return do_work_once
 
 
     def test_promise_setter(self):
@@ -77,14 +73,14 @@ class TestContainer(unittest.TestCase):
 
         promised, setter, seterr = self.promise()
 
-        assert(is_promise(promised))
-        assert(not is_delivered(promised))
+        self.assertTrue(is_promise(promised))
+        self.assertFalse(is_delivered(promised))
 
         val = { "testval": True, "a": 5, "b": tuple() }
         setter(val)
 
-        assert(is_delivered(promised))
-        assert(deliver(promised) == val)
+        self.assertTrue(is_delivered(promised))
+        self.assertEqual(deliver(promised), val)
 
 
     def test_promise_seterr(self):
@@ -92,33 +88,52 @@ class TestContainer(unittest.TestCase):
 
         promised, setter, seterr = self.promise()
 
-        assert(is_promise(promised))
-        assert(not is_delivered(promised))
+        self.assertTrue(is_promise(promised))
+        self.assertFalse(is_delivered(promised))
 
-        exc = Exception("test_settable_err")
+        class TacoException(Exception):
+            pass
+
+        exc = TacoException()
         seterr(*create_exc_tb(exc))
 
-        try:
-            deliver(promised)
-        except Exception, e:
-            assert(e == exc)
-        else:
-            # deliver had darn well better raise that exception
-            assert(False)
+        self.assertRaises(TacoException, lambda: deliver(promised))
 
         setter(8)
-        assert(is_delivered(promised))
-        assert(deliver(promised) == 8)
+        self.assertTrue(is_delivered(promised))
+        self.assertEqual(deliver(promised), 8)
+
+
+    def test_promise_double_set(self):
+
+        promised, setter, seterr = self.promise()
+
+        self.assertFalse(is_delivered(promised))
+
+        # we aren't ready to deliver, make sure that it says so
+        foo = lambda: deliver(promised)
+        self.assertRaises(PromiseNotReady, foo)
+
+        setter(100)
+        self.assertEqual(deliver(promised), 100)
+
+        # now we try to set it again
+        foo = lambda: setter(100)
+        self.assertRaises(PromiseAlreadyDelivered, foo)
+
+        # okay, how about setting an exception instead
+        foo = lambda: seterr(*create_exc_tb(Exception()))
+        self.assertRaises(PromiseAlreadyDelivered, foo)
 
 
     def test_memoized(self):
         # promised work is only executed once.
 
-        work = assert_called_once(lambda: "Hello World")
+        work = self.assert_called_once(lambda: "Hello World")
         promised = self.lazy(work)
 
-        assert(deliver(promised) == "Hello World")
-        assert(deliver(promised) == "Hello World")
+        self.assertEqual(deliver(promised), "Hello World")
+        self.assertEqual(deliver(promised), "Hello World")
 
 
     def test_callable_int(self):
@@ -126,13 +141,13 @@ class TestContainer(unittest.TestCase):
 
         promised = self.lazy(lambda: 5)
 
-        assert(is_promise(promised))
-        assert(not is_delivered(promised))
+        self.assertTrue(is_promise(promised))
+        self.assertFalse(is_delivered(promised))
 
         x = deliver(promised) + 1
-        assert(is_delivered(promised))
-        assert(deliver(promised) == 5)
-        assert(x == 6)
+        self.assertTrue(is_delivered(promised))
+        self.assertEqual(deliver(promised), 5)
+        self.assertEqual(x, 6)
 
 
     def test_non_callable_int(self):
@@ -140,13 +155,13 @@ class TestContainer(unittest.TestCase):
 
         promised = self.lazy(5)
 
-        assert(is_promise(promised))
-        assert(is_delivered(promised))
+        self.assertTrue(is_promise(promised))
+        self.assertTrue(is_delivered(promised))
 
         x = deliver(promised) + 1
-        assert(is_delivered(promised))
-        assert(deliver(promised) == 5)
-        assert(x == 6)
+        self.assertTrue(is_delivered(promised))
+        self.assertEqual(deliver(promised), 5)
+        self.assertEqual(x, 6)
 
 
 class TestProxy(TestContainer):
@@ -159,8 +174,8 @@ class TestProxy(TestContainer):
         return lazy_proxy(work, *args, **kwds)
 
 
-    def promise(self):
-        return promise_proxy()
+    def promise(self, blocking=False):
+        return promise_proxy(blocking=blocking)
 
 
     def test_proxy_equality(self):
@@ -180,8 +195,8 @@ class TestProxy(TestContainer):
         provs = [self.lazy(lambda:val) for val in values]
 
         for val,prov in zip(values, provs):
-            assert(prov == val), "%r != %r" % (prov, val)
-            assert(val == prov), "%r != %r" % (val, prov)
+            self.assertEqual(prov, val)
+            self.assertEqual(val, prov)
 
 
     def test_proxy_int(self):
@@ -191,18 +206,18 @@ class TestProxy(TestContainer):
         B = self.lazy(5)
         deliver(B)
 
-        assert(A == B)
-        assert(B == A)
-        assert((A + B) == 10)
-        assert((B + A) == 10)
-        assert((B * 2) == 10)
-        assert((2 * B) == 10)
-        assert((str(B)) == "5")
-        assert((int(B)) == 5)
-        assert((B % 1) == (5 % 1))
-        assert((B >> 1) == (5 >> 1))
-        assert((B << 1) == (5 << 1))
-        assert((B ** 2) == (5 ** 2))
+        self.assertTrue(A == B)
+        self.assertTrue(B == A)
+        self.assertTrue((A + B) == 10)
+        self.assertTrue((B + A) == 10)
+        self.assertTrue((B * 2) == 10)
+        self.assertTrue((2 * B) == 10)
+        self.assertTrue((str(B)) == "5")
+        self.assertTrue((int(B)) == 5)
+        self.assertTrue((B % 1) == (5 % 1))
+        self.assertTrue((B >> 1) == (5 >> 1))
+        self.assertTrue((B << 1) == (5 << 1))
+        self.assertTrue((B ** 2) == (5 ** 2))
 
 
     def test_proxy_obj(self):
@@ -225,13 +240,15 @@ class TestProxy(TestContainer):
         FB = self.lazy(Foo)
 
         deliver(FB)
-        assert(FA == FB)
-        assert(FB == FA)
+        self.assertTrue(FA == FB)
+        self.assertTrue(FB == FA)
 
         FA.B = 201
         FB.B = 201
-        assert(FA == FB)
-        assert(FB == FA)
+        self.assertTrue(FA == FB)
+        self.assertTrue(FB == FA)
+
+
 
 
 #
