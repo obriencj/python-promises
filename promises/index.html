@@ -59,14 +59,22 @@
 <div class="section" id="module-promises.multiprocess">
 <span id="promises-multiprocess-module"></span><h2>promises.multiprocess module<a class="headerlink" href="#module-promises.multiprocess" title="Permalink to this headline">¶</a></h2>
 <p>Multi-process Promises for Python</p>
-<p>author: Christopher O&#8217;Brien  &lt;<a class="reference external" href="mailto:obriencj&#37;&#52;&#48;gmail&#46;com">obriencj<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;
-license: LGPL v.3</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Christopher O&#8217;Brien  &lt;<a class="reference external" href="mailto:obriencj&#37;&#52;&#48;gmail&#46;com">obriencj<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">LGPL v.3</td>
+</tr>
+</tbody>
+</table>
 <dl class="class">
 <dt id="promises.multiprocess.ProcessExecutor">
 <em class="property">class </em><tt class="descclassname">promises.multiprocess.</tt><tt class="descname">ProcessExecutor</tt><big>(</big><em>processes=None</em><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProcessExecutor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProcessExecutor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>A way to provide multiple promises which will be delivered in
-a separate process.</p>
+<p>A way to provide multiple promises which will be delivered in a
+separate process.</p>
 <dl class="method">
 <dt id="promises.multiprocess.ProcessExecutor.deliver">
 <tt class="descname">deliver</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProcessExecutor.deliver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProcessExecutor.deliver" title="Permalink to this definition">¶</a></dt>
@@ -76,8 +84,9 @@ a separate process.</p>
 <dl class="method">
 <dt id="promises.multiprocess.ProcessExecutor.future">
 <tt class="descname">future</tt><big>(</big><em>work</em>, <em>*args</em>, <em>**kwds</em><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProcessExecutor.future"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProcessExecutor.future" title="Permalink to this definition">¶</a></dt>
-<dd><p>queue up work as to occur in a separate process, returning
-a container to reference the result</p>
+<dd><p>Promise to perform work in another process and to deliver the
+result in the future. Returns a container promise with a
+blocking deliver.</p>
 </dd></dl>
 
 <dl class="method">
@@ -104,27 +113,47 @@ separate process</p>
 </div>
 <div class="section" id="module-promises.multithread">
 <span id="promises-multithread-module"></span><h2>promises.multithread module<a class="headerlink" href="#module-promises.multithread" title="Permalink to this headline">¶</a></h2>
-<p>Multi-threaded Promises for Python</p>
-<p>author: Christopher O&#8217;Brien  &lt;<a class="reference external" href="mailto:obriencj&#37;&#52;&#48;gmail&#46;com">obriencj<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;
-license: LGPL v.3</p>
+<p>Multi-thread Promises for Python</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Christopher O&#8217;Brien  &lt;<a class="reference external" href="mailto:obriencj&#37;&#52;&#48;gmail&#46;com">obriencj<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">LGPL v.3</td>
+</tr>
+</tbody>
+</table>
 <dl class="class">
 <dt id="promises.multithread.ThreadExecutor">
 <em class="property">class </em><tt class="descclassname">promises.multithread.</tt><tt class="descname">ThreadExecutor</tt><big>(</big><em>threads=None</em><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ThreadExecutor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ThreadExecutor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>A way to provide multiple promises which will be delivered in a
+separate threads</p>
 <dl class="method">
 <dt id="promises.multithread.ThreadExecutor.deliver">
 <tt class="descname">deliver</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ThreadExecutor.deliver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ThreadExecutor.deliver" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>blocks until all underlying promises have been delivered</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="promises.multithread.ThreadExecutor.future">
 <tt class="descname">future</tt><big>(</big><em>work</em>, <em>*args</em>, <em>**kwds</em><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ThreadExecutor.future"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ThreadExecutor.future" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Promise to perform work in another process and to deliver the
+result in the future. Returns a container promise with a
+blocking deliver.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="promises.multithread.ThreadExecutor.is_delivered">
 <tt class="descname">is_delivered</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ThreadExecutor.is_delivered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ThreadExecutor.is_delivered" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="promises.multithread.ThreadExecutor.terminate">
+<tt class="descname">terminate</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ThreadExecutor.terminate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ThreadExecutor.terminate" title="Permalink to this definition">¶</a></dt>
+<dd><p>breaks all the remaining undelivered promises</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -132,17 +161,9 @@ license: LGPL v.3</p>
 <dt id="promises.multithread.ProxyThreadExecutor">
 <em class="property">class </em><tt class="descclassname">promises.multithread.</tt><tt class="descname">ProxyThreadExecutor</tt><big>(</big><em>threads=None</em><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ProxyThreadExecutor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ProxyThreadExecutor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#promises.multithread.ThreadExecutor" title="promises.multithread.ThreadExecutor"><tt class="xref py py-class docutils literal"><span class="pre">promises.multithread.ThreadExecutor</span></tt></a></p>
+<p>Creates transparent proxy promises, which will deliver in a
+separate thread</p>
 </dd></dl>
-
-<dl class="function">
-<dt id="promises.multithread.promise">
-<tt class="descclassname">promises.multithread.</tt><tt class="descname">promise</tt><big>(</big><em>blocking=False</em><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#promise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.promise" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="promises.multithread.promise_proxy">
-<tt class="descclassname">promises.multithread.</tt><tt class="descname">promise_proxy</tt><big>(</big><em>blocking=False</em><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#promise_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.promise_proxy" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </div>
 <div class="section" id="module-promises.xmlrpc">
@@ -154,17 +175,22 @@ license: LGPL v.3</p>
 <dt id="promises.xmlrpc.LazyMultiCall">
 <em class="property">class </em><tt class="descclassname">promises.xmlrpc.</tt><tt class="descname">LazyMultiCall</tt><big>(</big><em>server</em>, <em>group_calls=0</em><big>)</big><a class="reference internal" href="../_modules/promises/xmlrpc/#LazyMultiCall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.xmlrpc.LazyMultiCall" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>A wrapper to xmlrpclib.MultiCall which allows the programmer
-to receive promises for the calls as they are written, rather than
+<p>A wrapper to xmlrpclib.MultiCall which allows the programmer to
+receive promises for the calls as they are written, rather than
 having to gather and distribute the results at the end. Forcing a
 promise to deliver will also force this MultiCall to execute all
 of its queued xmlrpc calls.</p>
+<p>As with all lazy calls, if nothing requests delivery of the
+promised result, it is possible for the work to never be
+executed. As such, it is inappropriate to expect the queued calls
+to be triggered in any particular order, or at all.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="class">
 <dt id="promises.xmlrpc.ProxyMultiCall">
-<tt class="descclassname">promises.xmlrpc.</tt><tt class="descname">ProxyMultiCall</tt><big>(</big><em>LazyMultiCall</em><big>)</big><a class="reference internal" href="../_modules/promises/xmlrpc/#ProxyMultiCall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.xmlrpc.ProxyMultiCall" title="Permalink to this definition">¶</a></dt>
-<dd><p>A PromiseMultiCall which will returns Proxy instead of Container</p>
+<em class="property">class </em><tt class="descclassname">promises.xmlrpc.</tt><tt class="descname">ProxyMultiCall</tt><big>(</big><em>server</em>, <em>group_calls=0</em><big>)</big><a class="reference internal" href="../_modules/promises/xmlrpc/#ProxyMultiCall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.xmlrpc.ProxyMultiCall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#promises.xmlrpc.LazyMultiCall" title="promises.xmlrpc.LazyMultiCall"><tt class="xref py py-class docutils literal"><span class="pre">promises.xmlrpc.LazyMultiCall</span></tt></a></p>
+<p>A PromiseMultiCall which will returns Proxy instead of Container</p>
 </dd></dl>
 
 </div>
@@ -174,30 +200,38 @@ of its queued xmlrpc calls.</p>
 <p>Yet another module for doing promises in python! This time with
 transparent proxies, and other convoluted stuff that will make you
 wish someone smarter had worked on this.</p>
-<p>author: Christopher O&#8217;Brien  &lt;<a class="reference external" href="mailto:obriencj&#37;&#52;&#48;gmail&#46;com">obriencj<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;
-license: LGPL v.3</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Christopher O&#8217;Brien  &lt;<a class="reference external" href="mailto:obriencj&#37;&#52;&#48;gmail&#46;com">obriencj<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">LGPL v.3</td>
+</tr>
+</tbody>
+</table>
 <dl class="class">
 <dt id="promises.Container">
 <em class="property">class </em><tt class="descclassname">promises.</tt><tt class="descname">Container</tt><big>(</big><em>work</em><big>)</big><a class="reference internal" href="../_modules/promises/#Container"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.Container" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>Simple promise mechanism. Acts as a container to the promised
-work until delivered, and then acts as a container to the answer
-from then on. Will invoke the promised work function exactly once,
-but can deliver the answer multiple times.</p>
+<p>Simple promise mechanism. Acts as a container to the promised work
+until delivered, and there-after acts as a container to the return
+value from executing the work. Will invoke the promised work
+function exactly once, but can deliver the answer multiple times.</p>
 <dl class="method">
 <dt id="promises.Container.deliver">
 <tt class="descname">deliver</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/#Container.deliver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.Container.deliver" title="Permalink to this definition">¶</a></dt>
-<dd><p>Deliver on promised work. Will only execute the work if an
-answer has not already been found. If an exception is raised
-during the execution of work, it will be cascade up from here
-as well. Returns the answer to the work once known.</p>
+<dd><p>Deliver on promised work. Will only execute the work if an answer
+has not already been found. If an exception is raised during
+the execution of work, it will be cascade up from here as
+well. Returns the answer to the work once known.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="promises.Container.is_delivered">
 <tt class="descname">is_delivered</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/#Container.is_delivered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.Container.is_delivered" title="Permalink to this definition">¶</a></dt>
-<dd><p>True if the promised work has been called and an answer
-has been recorded.</p>
+<dd><p>True if the promised work has been called and an answer has been
+recorded.</p>
 </dd></dl>
 
 </dd></dl>
@@ -217,10 +251,10 @@ has been recorded.</p>
 <dl class="function">
 <dt id="promises.lazy">
 <tt class="descclassname">promises.</tt><tt class="descname">lazy</tt><big>(</big><em>work</em>, <em>*args</em>, <em>**kwds</em><big>)</big><a class="reference internal" href="../_modules/promises/#lazy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.lazy" title="Permalink to this definition">¶</a></dt>
-<dd><p>creates a new container promise to find an answer for work. If
-any additional arguments or keywords are provided a partial will
-be created to pass them to the work function and the partial will
-be stored as the nullary work.</p>
+<dd><p>creates a new container promise to find an answer for work. If any
+additional arguments or keywords are provided a partial will be
+created to pass them to the work function and the partial will be
+stored as the nullary work.</p>
 </dd></dl>
 
 <dl class="function">
@@ -235,16 +269,16 @@ stored as the nullary work.</p>
 <dl class="function">
 <dt id="promises.promise">
 <tt class="descclassname">promises.</tt><tt class="descname">promise</tt><big>(</big><em>blocking=False</em><big>)</big><a class="reference internal" href="../_modules/promises/#promise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.promise" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a tuple of a new Container, a unary function to
-deliver a value into that promise, and a ternary function to feed
-an exception to the promise.</p>
+<dd><p>Returns a tuple of a new Container, a unary function to deliver a
+value into that promise, and a ternary function to feed an
+exception to the promise.</p>
 <p>If blocking is set to True, then any attempt to deliver on the
 promise will block until/unless a value or exception has been set
 via the setter or seterr functions.</p>
 <p>example:
-&gt;&gt;&gt; promise,setter,seterr = settable_container()
+&gt;&gt;&gt; p,setter,seterr = promise()
 &gt;&gt;&gt; setter(5)
-&gt;&gt;&gt; promise.deliver()
+&gt;&gt;&gt; deliver(p)
 5</p>
 </dd></dl>
 
@@ -259,7 +293,7 @@ promise (including accessing its members) will block until/unless
 a value or exception has been set via the setter or seterr
 functions.</p>
 <p>example:
-&gt;&gt;&gt; promise,setter,seterr = settable_proxy()
+&gt;&gt;&gt; p,setter,seterr = promise_proxy()
 &gt;&gt;&gt; setter(5)
 &gt;&gt;&gt; promise
 5</p>
@@ -269,17 +303,17 @@ functions.</p>
 <dt id="promises.PromiseNotReady">
 <em class="property">exception </em><tt class="descclassname">promises.</tt><tt class="descname">PromiseNotReady</tt><a class="reference internal" href="../_modules/promises/#PromiseNotReady"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.PromiseNotReady" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="http://docs.python.org/2/library/exceptions.html#exceptions.Exception" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></a></p>
-<p>Raised when attempting to deliver on a promise whose
-underlying delivery function hasn&#8217;t been called (see
-container_pair and proxy_pair)</p>
+<p>Raised when attempting to deliver on a promise whose underlying
+delivery function hasn&#8217;t been called (see container_pair and
+proxy_pair)</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="promises.PromiseAlreadyDelivered">
 <em class="property">exception </em><tt class="descclassname">promises.</tt><tt class="descname">PromiseAlreadyDelivered</tt><a class="reference internal" href="../_modules/promises/#PromiseAlreadyDelivered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.PromiseAlreadyDelivered" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="http://docs.python.org/2/library/exceptions.html#exceptions.Exception" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></a></p>
-<p>Raised when a paired promise&#8217;s delivery function is called
-more than once (see container_pair and proxy_pair)</p>
+<p>Raised when a paired promise&#8217;s delivery function is called more
+than once (see container_pair and proxy_pair)</p>
 </dd></dl>
 
 <dl class="function">
