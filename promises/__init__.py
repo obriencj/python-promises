@@ -39,12 +39,11 @@ __all__ = ( 'Container', 'Proxy',
 
 
 class Container(object):
-
     """
     Simple promise mechanism. Acts as a container to the promised work
-    until delivered, and then acts as a container to the answer from
-    then on. Will invoke the promised work function exactly once, but
-    can deliver the answer multiple times.
+    until delivered, and there-after acts as a container to the return
+    value from executing the work. Will invoke the promised work
+    function exactly once, but can deliver the answer multiple times.
     """
 
     __slots__ = ('_work', '_answer')
@@ -167,6 +166,7 @@ class PromiseNotReady(Exception):
     delivery function hasn't been called (see container_pair and
     proxy_pair)
     """
+
     pass
 
 
@@ -175,11 +175,11 @@ class PromiseAlreadyDelivered(Exception):
     Raised when a paired promise's delivery function is called more
     than once (see container_pair and proxy_pair)
     """
+
     pass
 
 
 def _promise(promise_type, blocking=False):
-
     """
     This is the 'traditional' type of promise. It's a single-slot,
     write-once value.
@@ -230,7 +230,6 @@ def _promise(promise_type, blocking=False):
 
 
 def promise(blocking=False):
-
     """
     Returns a tuple of a new Container, a unary function to deliver a
     value into that promise, and a ternary function to feed an
@@ -241,9 +240,9 @@ def promise(blocking=False):
     via the setter or seterr functions.
 
     example:
-    >>> promise,setter,seterr = settable_container()
+    >>> p,setter,seterr = promise()
     >>> setter(5)
-    >>> promise.deliver()
+    >>> deliver(p)
     5
     """
 
@@ -251,7 +250,6 @@ def promise(blocking=False):
 
 
 def promise_proxy(blocking=False):
-
     """
     Returns a tuple of a new Proxy, a unary function to deliver a
     value into that promise, and a ternary function to feed an
@@ -263,7 +261,7 @@ def promise_proxy(blocking=False):
     functions.
 
     example:
-    >>> promise,setter,seterr = settable_proxy()
+    >>> p,setter,seterr = promise_proxy()
     >>> setter(5)
     >>> promise
     5
