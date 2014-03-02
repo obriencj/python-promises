@@ -69,8 +69,8 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">XML RPC MultiCall Promises</span>
 
-<span class="sd">author: Christopher O&#39;Brien  &lt;obriencj@gmail.com&gt;</span>
-<span class="sd">license: LGPL v.3</span>
+<span class="sd">:author: Christopher O&#39;Brien  &lt;obriencj@gmail.com&gt;</span>
+<span class="sd">:license: LGPL v.3</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 
@@ -90,12 +90,16 @@
 <span class="sd">    of its queued xmlrpc calls.</span>
 
 <span class="sd">    As with all lazy calls, if nothing requests delivery of the</span>
-<span class="sd">    promised result, it is possible for the work to never be</span>
-<span class="sd">    executed. As such, it is inappropriate to expect the queued calls</span>
-<span class="sd">    to be triggered in any particular order, or at all.</span>
+<span class="sd">    promised result, it is possible for the work to never be executed.</span>
+<span class="sd">    As such, it is inappropriate to expect the queued calls to be</span>
+<span class="sd">    triggered in any particular order, or at all.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__promise__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        override to provide alternative promise implementations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="n">lazy</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
 
 
@@ -106,6 +110,8 @@
 <span class="sd">        delivered at a time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="c"># hide our members well, since MultiCall creates member calls</span>
+        <span class="c"># on-the-fly</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__server</span> <span class="o">=</span> <span class="n">server</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__mclist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__mc</span> <span class="o">=</span> <span class="bp">None</span>
@@ -132,6 +138,10 @@
 
         <span class="k">for</span> <span class="n">mc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mclist</span><span class="p">:</span>
             <span class="n">mc</span><span class="p">()</span>
+
+        <span class="c"># the above invalidates our current __mc for further queueing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mc</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__counter</span> <span class="o">=</span> <span class="mi">0</span>
 
 
     <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
@@ -168,8 +178,8 @@
         <span class="n">multicall</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mc</span>
         <span class="k">if</span> <span class="n">multicall</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">multicall</span> <span class="o">=</span> <span class="n">MemoizedMultiCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__server</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__mclist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">multicall</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__mc</span> <span class="o">=</span> <span class="n">multicall</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__mclist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">multicall</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__counter</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="k">return</span> <span class="n">multicall</span>
@@ -179,8 +189,8 @@
         <span class="k">assert</span><span class="p">(</span><span class="n">mc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">)</span>
 
         <span class="c"># if the promise is against the current MC, then we need to</span>
-        <span class="c"># deliver on it and clear ourselves to create a new</span>
-        <span class="c"># one. Otherwise, use the memoized answers for the already</span>
+        <span class="c"># deliver on it and clear ourselves to create a new one.</span>
+        <span class="c"># Otherwise, use the memoized answers for the already</span>
         <span class="c"># delivered MC. Then we return the result at the given index.</span>
         <span class="k">if</span> <span class="n">mc</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mc</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__mc</span> <span class="o">=</span> <span class="bp">None</span>
@@ -194,7 +204,8 @@
 </div>
 <div class="viewcode-block" id="ProxyMultiCall"><a class="viewcode-back" href="../../../promises/#promises.xmlrpc.ProxyMultiCall">[docs]</a><span class="k">class</span> <span class="nc">ProxyMultiCall</span><span class="p">(</span><span class="n">LazyMultiCall</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A PromiseMultiCall which will returns Proxy instead of Container</span>
+<span class="sd">    A PromiseMultiCall which will return Proxy instead of Container</span>
+<span class="sd">    promises.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__promise__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
@@ -207,8 +218,12 @@
 <span class="sd">    once, remembers the answers for all further requests</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="c"># Note: we don&#39;t export this because it doesn&#39;t have any</span>
+    <span class="c"># safety-net in place to prevent someone from queueing more calls</span>
+    <span class="c"># against it post-delivery.</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server</span><span class="p">):</span>
-        <span class="n">MultiCall</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MemoizedMultiCall</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__answers</span> <span class="o">=</span> <span class="bp">None</span>
 
 

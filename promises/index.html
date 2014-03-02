@@ -73,31 +73,57 @@
 <dt id="promises.multiprocess.ProcessExecutor">
 <em class="property">class </em><tt class="descclassname">promises.multiprocess.</tt><tt class="descname">ProcessExecutor</tt><big>(</big><em>processes=None</em><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProcessExecutor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProcessExecutor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>A way to provide multiple promises which will be delivered in a
-separate process.</p>
+<p>Create promises which will deliver in a separate process.</p>
 <dl class="method">
 <dt id="promises.multiprocess.ProcessExecutor.deliver">
 <tt class="descname">deliver</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProcessExecutor.deliver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProcessExecutor.deliver" title="Permalink to this definition">¶</a></dt>
-<dd><p>blocks until all underlying promises have been delivered</p>
+<dd><p>Deliver on all underlying promises. Blocks until complete.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="promises.multiprocess.ProcessExecutor.future">
 <tt class="descname">future</tt><big>(</big><em>work</em>, <em>*args</em>, <em>**kwds</em><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProcessExecutor.future"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProcessExecutor.future" title="Permalink to this definition">¶</a></dt>
-<dd><p>Promise to perform work in another process and to deliver the
-result in the future. Returns a container promise with a
-blocking deliver.</p>
+<dd><p>Promise to deliver on the results of work in the future.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>work</strong> : <cite>callable</cite></p>
+<blockquote>
+<div><p>This is the work which will be performed to deliver on the
+future.</p>
+</div></blockquote>
+<p><strong>*args</strong> : <cite>optional positional parameters</cite></p>
+<blockquote>
+<div><p>arguments to the <cite>work</cite> function</p>
+</div></blockquote>
+<p><strong>**kwds</strong> : <cite>optional named parameters</cite></p>
+<blockquote>
+<div><p>keyword arguments to the <cite>work</cite> function</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>value</strong> : <cite>promise</cite></p>
+<blockquote class="last">
+<div><p>a promise acting as a placeholder for the result of
+evaluating <cite>work(*args, **kwds)</cite>. Note that calling <cite>deliver</cite>
+on this promise will potentially block until the underlying
+result is available.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
-
-<dl class="method">
-<dt id="promises.multiprocess.ProcessExecutor.is_delivered">
-<tt class="descname">is_delivered</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProcessExecutor.is_delivered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProcessExecutor.is_delivered" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="method">
 <dt id="promises.multiprocess.ProcessExecutor.terminate">
 <tt class="descname">terminate</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProcessExecutor.terminate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProcessExecutor.terminate" title="Permalink to this definition">¶</a></dt>
-<dd><p>breaks all the remaining undelivered promises</p>
+<dd><p>Breaks all the remaining undelivered promises, halts execution of
+any parallel work being performed.</p>
+<p>Any promise which had not managed to be delivered will never
+be delivered after calling <cite>terminate</cite>. Attempting to call
+<cite>deliver</cite> on them will result in a deadlock.</p>
 </dd></dl>
 
 </dd></dl>
@@ -106,8 +132,8 @@ blocking deliver.</p>
 <dt id="promises.multiprocess.ProxyProcessExecutor">
 <em class="property">class </em><tt class="descclassname">promises.multiprocess.</tt><tt class="descname">ProxyProcessExecutor</tt><big>(</big><em>processes=None</em><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProxyProcessExecutor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProxyProcessExecutor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#promises.multiprocess.ProcessExecutor" title="promises.multiprocess.ProcessExecutor"><tt class="xref py py-class docutils literal"><span class="pre">promises.multiprocess.ProcessExecutor</span></tt></a></p>
-<p>Creates transparent proxy promises, which will deliver in a
-separate process</p>
+<p>Create transparent proxy promises which will deliver in a separate
+process.</p>
 </dd></dl>
 
 </div>
@@ -126,40 +152,15 @@ separate process</p>
 </table>
 <dl class="class">
 <dt id="promises.multithread.ThreadExecutor">
-<em class="property">class </em><tt class="descclassname">promises.multithread.</tt><tt class="descname">ThreadExecutor</tt><big>(</big><em>threads=None</em><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ThreadExecutor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ThreadExecutor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<em class="property">class </em><tt class="descclassname">promises.multithread.</tt><tt class="descname">ThreadExecutor</tt><big>(</big><em>processes=None</em><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ThreadExecutor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ThreadExecutor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#promises.multiprocess.ProcessExecutor" title="promises.multiprocess.ProcessExecutor"><tt class="xref py py-class docutils literal"><span class="pre">promises.multiprocess.ProcessExecutor</span></tt></a></p>
 <p>A way to provide multiple promises which will be delivered in a
 separate threads</p>
-<dl class="method">
-<dt id="promises.multithread.ThreadExecutor.deliver">
-<tt class="descname">deliver</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ThreadExecutor.deliver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ThreadExecutor.deliver" title="Permalink to this definition">¶</a></dt>
-<dd><p>blocks until all underlying promises have been delivered</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="promises.multithread.ThreadExecutor.future">
-<tt class="descname">future</tt><big>(</big><em>work</em>, <em>*args</em>, <em>**kwds</em><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ThreadExecutor.future"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ThreadExecutor.future" title="Permalink to this definition">¶</a></dt>
-<dd><p>Promise to perform work in another process and to deliver the
-result in the future. Returns a container promise with a
-blocking deliver.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="promises.multithread.ThreadExecutor.is_delivered">
-<tt class="descname">is_delivered</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ThreadExecutor.is_delivered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ThreadExecutor.is_delivered" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="promises.multithread.ThreadExecutor.terminate">
-<tt class="descname">terminate</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ThreadExecutor.terminate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ThreadExecutor.terminate" title="Permalink to this definition">¶</a></dt>
-<dd><p>breaks all the remaining undelivered promises</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="class">
 <dt id="promises.multithread.ProxyThreadExecutor">
-<em class="property">class </em><tt class="descclassname">promises.multithread.</tt><tt class="descname">ProxyThreadExecutor</tt><big>(</big><em>threads=None</em><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ProxyThreadExecutor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ProxyThreadExecutor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">promises.multithread.</tt><tt class="descname">ProxyThreadExecutor</tt><big>(</big><em>processes=None</em><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ProxyThreadExecutor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ProxyThreadExecutor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#promises.multithread.ThreadExecutor" title="promises.multithread.ThreadExecutor"><tt class="xref py py-class docutils literal"><span class="pre">promises.multithread.ThreadExecutor</span></tt></a></p>
 <p>Creates transparent proxy promises, which will deliver in a
 separate thread</p>
@@ -169,8 +170,16 @@ separate thread</p>
 <div class="section" id="module-promises.xmlrpc">
 <span id="promises-xmlrpc-module"></span><h2>promises.xmlrpc module<a class="headerlink" href="#module-promises.xmlrpc" title="Permalink to this headline">¶</a></h2>
 <p>XML RPC MultiCall Promises</p>
-<p>author: Christopher O&#8217;Brien  &lt;<a class="reference external" href="mailto:obriencj&#37;&#52;&#48;gmail&#46;com">obriencj<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;
-license: LGPL v.3</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Christopher O&#8217;Brien  &lt;<a class="reference external" href="mailto:obriencj&#37;&#52;&#48;gmail&#46;com">obriencj<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">LGPL v.3</td>
+</tr>
+</tbody>
+</table>
 <dl class="class">
 <dt id="promises.xmlrpc.LazyMultiCall">
 <em class="property">class </em><tt class="descclassname">promises.xmlrpc.</tt><tt class="descname">LazyMultiCall</tt><big>(</big><em>server</em>, <em>group_calls=0</em><big>)</big><a class="reference internal" href="../_modules/promises/xmlrpc/#LazyMultiCall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.xmlrpc.LazyMultiCall" title="Permalink to this definition">¶</a></dt>
@@ -181,16 +190,17 @@ having to gather and distribute the results at the end. Forcing a
 promise to deliver will also force this MultiCall to execute all
 of its queued xmlrpc calls.</p>
 <p>As with all lazy calls, if nothing requests delivery of the
-promised result, it is possible for the work to never be
-executed. As such, it is inappropriate to expect the queued calls
-to be triggered in any particular order, or at all.</p>
+promised result, it is possible for the work to never be executed.
+As such, it is inappropriate to expect the queued calls to be
+triggered in any particular order, or at all.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="promises.xmlrpc.ProxyMultiCall">
 <em class="property">class </em><tt class="descclassname">promises.xmlrpc.</tt><tt class="descname">ProxyMultiCall</tt><big>(</big><em>server</em>, <em>group_calls=0</em><big>)</big><a class="reference internal" href="../_modules/promises/xmlrpc/#ProxyMultiCall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.xmlrpc.ProxyMultiCall" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#promises.xmlrpc.LazyMultiCall" title="promises.xmlrpc.LazyMultiCall"><tt class="xref py py-class docutils literal"><span class="pre">promises.xmlrpc.LazyMultiCall</span></tt></a></p>
-<p>A PromiseMultiCall which will returns Proxy instead of Container</p>
+<p>A PromiseMultiCall which will return Proxy instead of Container
+promises.</p>
 </dd></dl>
 
 </div>
@@ -275,11 +285,13 @@ exception to the promise.</p>
 <p>If blocking is set to True, then any attempt to deliver on the
 promise will block until/unless a value or exception has been set
 via the setter or seterr functions.</p>
-<p>example:
-&gt;&gt;&gt; p,setter,seterr = promise()
-&gt;&gt;&gt; setter(5)
-&gt;&gt;&gt; deliver(p)
-5</p>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="p">,</span><span class="n">setter</span><span class="p">,</span><span class="n">seterr</span> <span class="o">=</span> <span class="n">promise</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">setter</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">deliver</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="go">5</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="function">
@@ -292,11 +304,13 @@ exception to the promise.</p>
 promise (including accessing its members) will block until/unless
 a value or exception has been set via the setter or seterr
 functions.</p>
-<p>example:
-&gt;&gt;&gt; p,setter,seterr = promise_proxy()
-&gt;&gt;&gt; setter(5)
-&gt;&gt;&gt; promise
-5</p>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="p">,</span><span class="n">setter</span><span class="p">,</span><span class="n">seterr</span> <span class="o">=</span> <span class="n">promise_proxy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">setter</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">promise</span>
+<span class="go">5</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="exception">
