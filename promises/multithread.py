@@ -14,33 +14,45 @@
 
 
 """
-Multi-threaded Promises for Python
+Multi-thread Promises for Python
 
-author: Christopher O'Brien  <obriencj@gmail.com>
-license: LGPL v.3
+:author: Christopher O'Brien  <obriencj@gmail.com>
+:license: LGPL v.3
 """
 
 
 from functools import partial
 from multiprocessing.pool import ThreadPool
-from promises import lazy, lazy_proxy, Container, Proxy
-from promises import PromiseNotReady, PromiseAlreadyDelivered
+from promises import promise, promise_proxy
+
+import sys
 
 
-__all__ = ( 'ThreadExecutor', 'ProxyThreadExecutor',
-            'promise', 'promise_proxy' )
+__all__ = ( 'ThreadExecutor', 'ProxyThreadExecutor' )
+
+
+def _perform_work(work):
+    """
+    This function is what the worker processes will use to collect the
+    result from work (whether via return or raise)
+    """
+
+    try:
+        return (True, work())
+    except Exception as exc:
+        return (False, (type(exc), exc, None))
 
 
 class ThreadExecutor(object):
-
-
-    def __promise__(self, work):
-        return lazy(work)
+    """
+    A way to provide multiple promises which will be delivered in a
+    separate threads
+    """
 
 
     def __init__(self, threads=None):
-        self.__pool = None
-        self.__threads = threads
+        self._threads = threads
+        self._pool = None
 
 
     def __enter__(self):
@@ -48,58 +60,82 @@ class ThreadExecutor(object):
 
 
     def __exit__(self, exc_type, _exc_val, _exc_tb):
+        """
+        Using the managed interface forces blocking delivery at the end of
+        the managed segment.
+        """
+
         self.deliver()
         return (exc_type is None)
 
 
+    def _promise(self):
+        """
+        override to use a different promise mechanism
+        """
+
+        return promise(blocking=True)
+
+
     def future(self, work, *args, **kwds):
-        if not self.__pool:
-            self.__pool = ThreadPool(processes=self.__threads)
+        """
+        Promise to perform work in another process and to deliver the
+        result in the future. Returns a container promise with a
+        blocking deliver.
+        """
+
+        if not self._pool:
+            self._pool = ThreadPool(processes=self._threads)
 
         if args or kwds:
             work = partial(work, *args, **kwds)
 
-        result = self.__pool.apply_async(work, [], {})
-        return self.__promise__(result.get)
+        promised,setter,seterr = self._promise()
+
+        def callback(value):
+            success, result = value
+            if success:
+                setter(result)
+            else:
+                seterr(*result)
+
+        self._pool.apply_async(_perform_work, [work], {}, callback)
+        return promised
+
+
+    def terminate(self):
+        """
+        breaks all the remaining undelivered promises
+        """
+
+        self._pool.terminate()
+        self._pool = None
 
 
     def deliver(self):
-        self.__pool.close()
-        self.__pool is None
+        """
+        blocks until all underlying promises have been delivered
+        """
+
+        self._pool.close()
+        self._pool.join()
+        self._pool = None
 
 
     def is_delivered(self):
-        return (self.__pool is None)
+        # TODO better to ask if the pool is empty, check on this
+        # later.
+        return (self._pool is None)
 
 
 class ProxyThreadExecutor(ThreadExecutor):
+    """
+    Creates transparent proxy promises, which will deliver in a
+    separate thread
+    """
 
-    def __promise__(self, work):
-        return lazy_proxy(work)
-
-
-def _promise(promise_type, blocking=False):
-
-    def promise_getter():
-        pass
-
-    promise = promise_type(promise_getter)
-
-    def promise_setter(value):
-        pass
-
-    def promise_seterr(exc_type, exc_val, exc_tb):
-        pass
-
-    return promise, promise_setter, promise_getter
-
-
-def promise(blocking=False):
-    return _promise(Container, blocking=blocking)
-
-
-def promise_proxy(blocking=False):
-    return _promise(Proxy, blocking=blocking)
+    def _promise(self):
+        return promise_proxy(blocking=True)
 
 
 #

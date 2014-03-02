@@ -23,10 +23,26 @@ Multi-process Promises for Python
 
 from functools import partial
 from multiprocessing.pool import Pool
-from promises import lazy, lazy_proxy
+from promises import promise, promise_proxy
+
+import sys
 
 
 __all__ = ( 'ProcessExecutor', 'ProxyProcessExecutor' )
+
+
+# coverage doesn't see this get called in the other processes, so I
+# exclude it.
+def _perform_work(work): # pragma: no cover
+    """
+    This function is what the worker processes will use to collect the
+    result from work (whether via return or raise)
+    """
+
+    try:
+        return (True, work())
+    except Exception as exc:
+        return (False, (type(exc), exc, None))
 
 
 class ProcessExecutor(object):
@@ -35,16 +51,10 @@ class ProcessExecutor(object):
     separate process.
     """
 
-    def __promise__(self, work):
-        """
-        must be overridden to provide a promise to do the specified work
-        """
-        return lazy(work)
-
 
     def __init__(self, processes=None):
-        self.__processes = processes
-        self.__pool = None
+        self._processes = processes
+        self._pool = None
 
 
     def __enter__(self):
@@ -52,61 +62,82 @@ class ProcessExecutor(object):
 
 
     def __exit__(self, exc_type, _exc_val, _exc_tb):
+        """
+        Using the managed interface forces blocking delivery at the end of
+        the managed segment.
+        """
+
         self.deliver()
         return (exc_type is None)
 
 
-    def future(self, work, *args, **kwds):
+    def _promise(self):
         """
-        queue up work as to occur in a separate process, returning a
-        container to reference the result
+        override to use a different promise mechanism
         """
 
-        if not self.__pool:
-            self.__pool = Pool(processes=self.__processes)
+        return promise(blocking=True)
+
+
+    def future(self, work, *args, **kwds):
+        """
+        Promise to perform work in another process and to deliver the
+        result in the future. Returns a container promise with a
+        blocking deliver.
+        """
+
+        if not self._pool:
+            self._pool = Pool(processes=self._processes)
 
         if args or kwds:
             work = partial(work, *args, **kwds)
 
-        # yay for Pool.apply_async, doing all the heavy lifting for
-        # us, so we don't need to correlate tasks or deal with Queues
-        # ourselves. However, this does NOT handle KeyboardInterrupt
-        # well at all... I may need to look at catching that myself.
-        result = self.__pool.apply_async(work, [], {})
-        return self.__promise__(result.get)
+        promised,setter,seterr = self._promise()
+
+        def callback(value):
+            success, result = value
+            if success:
+                setter(result)
+            else:
+                seterr(*result)
+
+        self._pool.apply_async(_perform_work, [work], {}, callback)
+        return promised
 
 
     def terminate(self):
         """
         breaks all the remaining undelivered promises
         """
-        self.__pool.terminate()
-        self.__pool = None
+
+        self._pool.terminate()
+        self._pool = None
 
 
     def deliver(self):
         """
         blocks until all underlying promises have been delivered
         """
-        self.__pool.close()
-        self.__pool = None
+
+        self._pool.close()
+        self._pool.join()
+        self._pool = None
 
 
     def is_delivered(self):
         # TODO better to ask if the pool is empty, check on this
         # later.
-        return (self.__pool is None)
+        return (self._pool is None)
 
 
 class ProxyProcessExecutor(ProcessExecutor):
-
     """
     Creates transparent proxy promises, which will deliver in a
     separate process
     """
 
-    def __promise__(self, work):
-        return lazy_proxy(work)
+    def _promise(self):
+        return promise_proxy(blocking=True)
 
 
 #
