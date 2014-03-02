@@ -1,6 +1,9 @@
 
 # Overview of python-promises
 
+[![Build Status](https://travis-ci.org/obriencj/python-promises.png?branch=master)](https://travis-ci.org/obriencj/python-promises)
+[![Coverage Status](https://coveralls.io/repos/obriencj/python-promises/badge.png?branch=master)](https://coveralls.io/r/obriencj/python-promises?branch=master)
+
 A [Python] module providing container and proxy promises, supporting
 delayed linear and multi-processing delivery.
 
