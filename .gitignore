@@ -7,11 +7,13 @@
 *.tar
 *~
 .#*
+.DS_Store
 .coverage
 MANIFEST
 _build
 _deploy
 build
+coverage.xml
 dist
 htmlcov
 tmp
