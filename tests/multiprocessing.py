@@ -14,26 +14,51 @@
 
 
 """
-
-Unit-tests for python-promises
+Unit-tests for python-promises multiprocessing support
 
 author: Christopher O'Brien  <obriencj@gmail.com>
 license: LGPL v.3
-
 """
 
 
-import unittest
+from promises.multiprocess import ProcessExecutor, ProxyProcessExecutor
+from unittest import TestCase
 
 
-class TestContainerMultiprocess(unittest.TestCase):
-    pass
+def work_load(x):
+    return x + 1
 
 
-class TestProxyMultiprocess(unittest.TestCase):
-    pass
+class TestProcessExecutor(TestCase):
+
+
+    def executor(self):
+        return ProcessExecutor()
+
+
+    def test_parallel(self):
+        with self.executor() as E:
+            a = E.future(work_load, -1)
+            values = [E.future(work_load, x) for x in xrange(0, 999)]
+            b = E.future(work_load, -101)
+
+        self.assertTrue(is_promise(a))
+        self.assertTrue(is_delivered(a))
+        self.assertEqual(deliver(a), 0)
+
+        self.assertTrue(is_promise(b))
+        self.assertTrue(is_delivered(b))
+        self.assertEqual(deliver(b), -100)
+
+        self.assertEqual([deliver(v) for v in values],
+                         list(xrange(1, 1000)))
+
+
+class TestProxyProcessExecutor(TestProcessExecutor):
+
+    def _executor(self):
+        return ProxyProcessExecutor()
 
 
 #
 # The end.
-
