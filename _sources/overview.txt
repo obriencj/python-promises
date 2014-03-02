@@ -14,6 +14,8 @@ to 0.9.0 and am not promising any kind of API stability until 1.0.0 at
 which point I'll tag it and cut a release. Feel free to play, fork, or
 experiment.
 
+-  `python-promises
+   documentation <http://obriencj.preoccupied.net/python-promises/>`__
 -  `python-promises on
    GitHub <https://github.com/obriencj/python-promises/>`__
 -  python-promises not on PyPI until version 1.0.0
@@ -22,7 +24,9 @@ These Python Promises
 ---------------------
 
 *This is very much a work in progress. I am still working out how much I
-want to explain, in what order, etc.*
+want to explain, in what order, etc. It may be best to just expect that
+everyone knows what a promise is and not explain anything at all... -
+Chris*
 
 So let's start simply, assuming that while everyone is already familiar
 with the concept of a
@@ -60,14 +64,14 @@ Lazy Container
 --------------
 
 A lazy container is a simple, object-oriented placeholder. It can be
-created by invoking the ``lazy`` function, passing a nullary work
-function as the single argument. When delivered, the container will call
-that work and collect the result as its answer. Any further invocations
-of deliver will return the answer without re-executing the work.
-However, if an exception is raised by the work during delivery the
-container will not be considered as delivered. In the case of a
-transient issue (such as a time-out), delivery can be attempted again
-until an answer is finally returned.
+created by invoking the ``lazy`` function, passing a work function and
+any arguments it needs. When delivered, the container will call that
+work and collect the result as its answer. Any further invocations of
+deliver will return the answer without re-executing the work. However,
+if an exception is raised by the work during delivery the container will
+not be considered as delivered. In the case of a transient issue (such
+as a time-out), delivery can be attempted again until an answer is
+finally returned.
 
 Lazy Proxy
 ----------
@@ -78,6 +82,9 @@ itself. A proxy is created by invoking the ``lazy_proxy`` function, and
 passing a nullary work function as the single argument. If your work
 delivers an int, then treat the proxy like an int. If your work delivers
 a dictionary, then treat the proxy like it were a dictionary.
+
+Proxy Problems
+~~~~~~~~~~~~~~
 
 A proxy tries fairly hard to act like the delivered value, by passing
 along almost every conceivable call to the underlying answer.
@@ -132,12 +139,12 @@ This module uses setuptools, so simply run
 Related
 -------
 
-Lots of alternative implementations following different wavelengths of
-this concept. Here are some for your perusal.
+There are multiple alternative implementations following different
+wavelengths of this concept. Here are some for your perusal.
 
 -  `concurrent.futures <http://docs.python.org/dev/library/concurrent.futures.html>`__
-   - `Python 3.4 <http://docs.python.org/dev/whatsnew/3.4.html>`__ (in
-   Beta) includes `PEP-3148 <http://www.python.org/dev/peps/pep-3148>`__
+   - `Python 3.4 <http://docs.python.org/dev/whatsnew/3.4.html>`__
+   includes `PEP-3148 <http://www.python.org/dev/peps/pep-3148>`__
 -  `futureutils <https://pypi.python.org/pypi/futureutils>`__ -
    Introduces futures and promises into iterators
 -  `aplus <https://github.com/xogeny/aplus>`__ - Promises/A+

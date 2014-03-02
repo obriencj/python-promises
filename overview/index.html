@@ -68,6 +68,8 @@ to 0.9.0 and am not promising any kind of API stability until 1.0.0 at
 which point I&#8217;ll tag it and cut a release. Feel free to play, fork, or
 experiment.</p>
 <ul class="simple">
+<li><a class="reference external" href="http://obriencj.preoccupied.net/python-promises/">python-promises
+documentation</a></li>
 <li><a class="reference external" href="https://github.com/obriencj/python-promises/">python-promises on
 GitHub</a></li>
 <li>python-promises not on PyPI until version 1.0.0</li>
@@ -75,7 +77,9 @@ GitHub</a></li>
 <div class="section" id="these-python-promises">
 <h2>These Python Promises<a class="headerlink" href="#these-python-promises" title="Permalink to this headline">¶</a></h2>
 <p><em>This is very much a work in progress. I am still working out how much I
-want to explain, in what order, etc.</em></p>
+want to explain, in what order, etc. It may be best to just expect that
+everyone knows what a promise is and not explain anything at all... -
+Chris</em></p>
 <p>So let&#8217;s start simply, assuming that while everyone is already familiar
 with the concept of a
 <a class="reference external" href="http://en.wiktionary.org/wiki/promise#Noun">promise</a> and how it
@@ -107,14 +111,14 @@ Put another way, promises are not the same as tasks.</p>
 <div class="section" id="lazy-container">
 <h2>Lazy Container<a class="headerlink" href="#lazy-container" title="Permalink to this headline">¶</a></h2>
 <p>A lazy container is a simple, object-oriented placeholder. It can be
-created by invoking the <tt class="docutils literal"><span class="pre">lazy</span></tt> function, passing a nullary work
-function as the single argument. When delivered, the container will call
-that work and collect the result as its answer. Any further invocations
-of deliver will return the answer without re-executing the work.
-However, if an exception is raised by the work during delivery the
-container will not be considered as delivered. In the case of a
-transient issue (such as a time-out), delivery can be attempted again
-until an answer is finally returned.</p>
+created by invoking the <tt class="docutils literal"><span class="pre">lazy</span></tt> function, passing a work function and
+any arguments it needs. When delivered, the container will call that
+work and collect the result as its answer. Any further invocations of
+deliver will return the answer without re-executing the work. However,
+if an exception is raised by the work during delivery the container will
+not be considered as delivered. In the case of a transient issue (such
+as a time-out), delivery can be attempted again until an answer is
+finally returned.</p>
 </div>
 <div class="section" id="lazy-proxy">
 <h2>Lazy Proxy<a class="headerlink" href="#lazy-proxy" title="Permalink to this headline">¶</a></h2>
@@ -124,6 +128,8 @@ itself. A proxy is created by invoking the <tt class="docutils literal"><span cl
 passing a nullary work function as the single argument. If your work
 delivers an int, then treat the proxy like an int. If your work delivers
 a dictionary, then treat the proxy like it were a dictionary.</p>
+<div class="section" id="proxy-problems">
+<h3>Proxy Problems<a class="headerlink" href="#proxy-problems" title="Permalink to this headline">¶</a></h3>
 <p>A proxy tries fairly hard to act like the delivered value, by passing
 along almost every conceivable call to the underlying answer.</p>
 <p>However, proxies are still their own type. As such, any code that is
@@ -155,6 +161,7 @@ equal.</p>
 </pre></div>
 </div>
 </div>
+</div>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -172,12 +179,12 @@ code)</li>
 </div>
 <div class="section" id="related">
 <h2>Related<a class="headerlink" href="#related" title="Permalink to this headline">¶</a></h2>
-<p>Lots of alternative implementations following different wavelengths of
-this concept. Here are some for your perusal.</p>
+<p>There are multiple alternative implementations following different
+wavelengths of this concept. Here are some for your perusal.</p>
 <ul class="simple">
 <li><a class="reference external" href="http://docs.python.org/dev/library/concurrent.futures.html">concurrent.futures</a>
-- <a class="reference external" href="http://docs.python.org/dev/whatsnew/3.4.html">Python 3.4</a> (in
-Beta) includes <a class="reference external" href="http://www.python.org/dev/peps/pep-3148">PEP-3148</a></li>
+- <a class="reference external" href="http://docs.python.org/dev/whatsnew/3.4.html">Python 3.4</a>
+includes <a class="reference external" href="http://www.python.org/dev/peps/pep-3148">PEP-3148</a></li>
 <li><a class="reference external" href="https://pypi.python.org/pypi/futureutils">futureutils</a> -
 Introduces futures and promises into iterators</li>
 <li><a class="reference external" href="https://github.com/xogeny/aplus">aplus</a> - Promises/A+
@@ -216,7 +223,10 @@ along with this library; if not, see <a class="reference external" href="http://
 <li><a class="reference internal" href="#">Overview of python-promises</a><ul>
 <li><a class="reference internal" href="#these-python-promises">These Python Promises</a></li>
 <li><a class="reference internal" href="#lazy-container">Lazy Container</a></li>
-<li><a class="reference internal" href="#lazy-proxy">Lazy Proxy</a></li>
+<li><a class="reference internal" href="#lazy-proxy">Lazy Proxy</a><ul>
+<li><a class="reference internal" href="#proxy-problems">Proxy Problems</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#install">Install</a></li>
 <li><a class="reference internal" href="#related">Related</a></li>
