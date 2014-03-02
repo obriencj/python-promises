@@ -16,8 +16,8 @@
 """
 XML RPC MultiCall Promises
 
-author: Christopher O'Brien  <obriencj@gmail.com>
-license: LGPL v.3
+:author: Christopher O'Brien  <obriencj@gmail.com>
+:license: LGPL v.3
 """
 
 
@@ -37,12 +37,16 @@ class LazyMultiCall(object):
     of its queued xmlrpc calls.
 
     As with all lazy calls, if nothing requests delivery of the
-    promised result, it is possible for the work to never be
-    executed. As such, it is inappropriate to expect the queued calls
-    to be triggered in any particular order, or at all.
+    promised result, it is possible for the work to never be executed.
+    As such, it is inappropriate to expect the queued calls to be
+    triggered in any particular order, or at all.
     """
 
     def __promise__(self, work, *args, **kwds):
+        """
+        override to provide alternative promise implementations
+        """
+
         return lazy(work, *args, **kwds)
 
 
@@ -53,6 +57,8 @@ class LazyMultiCall(object):
         delivered at a time.
         """
 
+        # hide our members well, since MultiCall creates member calls
+        # on-the-fly
         self.__server = server
         self.__mclist = list()
         self.__mc = None
@@ -79,6 +85,10 @@ class LazyMultiCall(object):
 
         for mc in self.__mclist:
             mc()
+
+        # the above invalidates our current __mc for further queueing
+        self.__mc = None
+        self.__counter = 0
 
 
     def __getattr__(self, name):
@@ -115,8 +125,8 @@ class LazyMultiCall(object):
         multicall = self.__mc
         if multicall is None:
             multicall = MemoizedMultiCall(self.__server)
-            self.__mclist.append(multicall)
             self.__mc = multicall
+            self.__mclist.append(multicall)
             self.__counter = 0
 
         return multicall
@@ -126,8 +136,8 @@ class LazyMultiCall(object):
         assert(mc is not None)
 
         # if the promise is against the current MC, then we need to
-        # deliver on it and clear ourselves to create a new
-        # one. Otherwise, use the memoized answers for the already
+        # deliver on it and clear ourselves to create a new one.
+        # Otherwise, use the memoized answers for the already
         # delivered MC. Then we return the result at the given index.
         if mc is self.__mc:
             self.__mc = None
@@ -141,7 +151,8 @@ class LazyMultiCall(object):
 
 class ProxyMultiCall(LazyMultiCall):
     """
-    A PromiseMultiCall which will returns Proxy instead of Container
+    A PromiseMultiCall which will return Proxy instead of Container
+    promises.
     """
 
     def __promise__(self, work, *args, **kwds):
@@ -154,8 +165,12 @@ class MemoizedMultiCall(MultiCall):
     once, remembers the answers for all further requests
     """
 
+    # Note: we don't export this because it doesn't have any
+    # safety-net in place to prevent someone from queueing more calls
+    # against it post-delivery.
+
     def __init__(self, server):
-        MultiCall.__init__(self, server)
+        super(MemoizedMultiCall, self).__init__(server)
         self.__answers = None
 
 

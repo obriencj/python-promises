@@ -16,8 +16,8 @@
 """
 Unit-tests for python-promises multithreading support
 
-author: Christopher O'Brien  <obriencj@gmail.com>
-license: LGPL v.3
+:author: Christopher O'Brien  <obriencj@gmail.com>
+:license: LGPL v.3
 """
 
 
@@ -26,12 +26,19 @@ from .multiprocess import TestProcessExecutor
 
 
 class TestThreadExecutor(TestProcessExecutor):
+    """
+    Create promises which will deliver in a separate thread.
+    """
 
     def executor(self):
         return ThreadExecutor()
 
 
 class TestProxyThreadExecutor(TestProcessExecutor):
+    """
+    Create transparent proxy promises which will deliver in a separate
+    thread.
+    """
 
     def executor(self):
         return ProxyThreadExecutor()

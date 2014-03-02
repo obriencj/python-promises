@@ -25,8 +25,6 @@ from functools import partial
 from multiprocessing.pool import Pool
 from promises import promise, promise_proxy
 
-import sys
-
 
 __all__ = ( 'ProcessExecutor', 'ProxyProcessExecutor' )
 
@@ -35,20 +33,27 @@ def _perform_work(work):
     """
     This function is what the worker processes will use to collect the
     result from work (whether via return or raise)
+
+    Returns
+    -------
+    value : `tuple`
+      `(True, result)` if `work()` succeeds, else `(False, exc_info)`
+      if an exception was raised
     """
 
     try:
         return (True, work())
     except Exception as exc:
+        # we are discarding the stack trace as it won't survive
+        # pickling (which is how it will be passed back to the
+        # handler from the worker process/thread)
         return (False, (type(exc), exc, None))
 
 
 class ProcessExecutor(object):
     """
-    A way to provide multiple promises which will be delivered in a
-    separate process.
+    Create promises which will deliver in a separate process.
     """
-
 
     def __init__(self, processes=None):
         self._processes = processes
@@ -78,6 +83,10 @@ class ProcessExecutor(object):
 
 
     def _get_pool(self):
+        """
+        override to provide a different pool implementation
+        """
+
         if not self._pool:
             self._pool = Pool(processes=self._processes)
         return self._pool
@@ -85,9 +94,25 @@ class ProcessExecutor(object):
 
     def future(self, work, *args, **kwds):
         """
-        Promise to perform work in another process and to deliver the
-        result in the future. Returns a container promise with a
-        blocking deliver.
+        Promise to deliver on the results of work in the future.
+
+        Parameters
+        ----------
+        work : `callable`
+          This is the work which will be performed to deliver on the
+          future.
+        *args : `optional positional parameters`
+          arguments to the `work` function
+        **kwds : `optional named parameters`
+          keyword arguments to the `work` function
+
+        Returns
+        -------
+        value : `promise`
+          a promise acting as a placeholder for the result of
+          evaluating `work(*args, **kwds)`. Note that calling `deliver`
+          on this promise will potentially block until the underlying
+          result is available.
         """
 
         if args or kwds:
@@ -113,8 +138,18 @@ class ProcessExecutor(object):
 
     def terminate(self):
         """
-        breaks all the remaining undelivered promises
+        Breaks all the remaining undelivered promises, halts execution of
+        any parallel work being performed.
+
+        Any promise which had not managed to be delivered will never
+        be delivered after calling `terminate`. Attempting to call
+        `deliver` on them will result in a deadlock.
         """
+
+        # TODO: is there a way for us to cause all undelivered
+        # promises to raise an exception of some sort when this
+        # happens? That would be better than deadlocking while waiting
+        # for delivery.
 
         if self._pool is not None:
             self._pool.terminate()
@@ -123,7 +158,7 @@ class ProcessExecutor(object):
 
     def deliver(self):
         """
-        blocks until all underlying promises have been delivered
+        Deliver on all underlying promises. Blocks until complete.
         """
 
         if self._pool is not None:
@@ -132,16 +167,10 @@ class ProcessExecutor(object):
             self._pool = None
 
 
-    def is_delivered(self):
-        # TODO better to ask if the pool is empty, check on this
-        # later.
-        return (self._pool is None)
-
-
 class ProxyProcessExecutor(ProcessExecutor):
     """
-    Creates transparent proxy promises, which will deliver in a
-    separate process
+    Create transparent proxy promises which will deliver in a separate
+    process.
     """
 
     def _promise(self):

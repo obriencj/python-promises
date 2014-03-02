@@ -239,7 +239,8 @@ def promise(blocking=False):
     promise will block until/unless a value or exception has been set
     via the setter or seterr functions.
 
-    example:
+    Examples
+    --------
     >>> p,setter,seterr = promise()
     >>> setter(5)
     >>> deliver(p)
@@ -260,7 +261,8 @@ def promise_proxy(blocking=False):
     a value or exception has been set via the setter or seterr
     functions.
 
-    example:
+    Examples
+    --------
     >>> p,setter,seterr = promise_proxy()
     >>> setter(5)
     >>> promise
