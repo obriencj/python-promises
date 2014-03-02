@@ -21,7 +21,6 @@ Multi-process Promises for Python
 """
 
 
-from functools import partial
 from multiprocessing.pool import Pool
 from promises import promise, promise_proxy
 
@@ -29,7 +28,7 @@ from promises import promise, promise_proxy
 __all__ = ( 'ProcessExecutor', 'ProxyProcessExecutor' )
 
 
-def _perform_work(work):
+def _perform_work(*args, **kwds):
     """
     This function is what the worker processes will use to collect the
     result from work (whether via return or raise)
@@ -41,8 +40,10 @@ def _perform_work(work):
       if an exception was raised
     """
 
+    work, args = args
+
     try:
-        return (True, work())
+        return (True, work(*args, **kwds))
     except Exception as exc:
         # we are discarding the stack trace as it won't survive
         # pickling (which is how it will be passed back to the
@@ -115,9 +116,6 @@ class ProcessExecutor(object):
           result is available.
         """
 
-        if args or kwds:
-            work = partial(work, *args, **kwds)
-
         promised,setter,seterr = self._promise()
 
         def callback(value):
@@ -131,7 +129,7 @@ class ProcessExecutor(object):
 
         # queue up the work in our pool
         pool = self._get_pool()
-        pool.apply_async(_perform_work, [work], {}, callback)
+        pool.apply_async(_perform_work, [work, args], kwds, callback)
 
         return promised
 
