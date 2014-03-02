@@ -1,7 +1,6 @@
 language: python
 python:
   - "2.7"
-  - "2.6"
 install: pip install coveralls
 script: coverage run --source=promises setup.py test
 
