@@ -13,6 +13,7 @@ to 0.9.0 and am not promising any kind of API stability until 1.0.0 at
 which point I'll tag it and cut a release. Feel free to play, fork, or
 experiment.
 
+* [python-promises documentation][docs]
 * [python-promises on GitHub][github]
 * python-promises not on PyPI until version 1.0.0
 
@@ -21,6 +22,8 @@ experiment.
 [pep-3148]: http://www.python.org/dev/peps/pep-3148
 "PEP-3148 - futures - execute computations asynchronously"
 
+[docs]: http://obriencj.preoccupied.net/python-promises/
+
 [github]: https://github.com/obriencj/python-promises/
 "python-promises on GitHub"
 
@@ -28,7 +31,9 @@ experiment.
 ## These Python Promises
 
 *This is very much a work in progress. I am still working out how much
- I want to explain, in what order, etc.*
+ I want to explain, in what order, etc. It may be best to just expect
+ that everyone knows what a promise is and not explain anything at
+ all... - Chris*
 
 So let's start simply, assuming that while everyone is already
 familiar with the concept of a [promise][promise-noun] and how it
@@ -69,14 +74,14 @@ work. Put another way, promises are not the same as tasks.
 ## Lazy Container
 
 A lazy container is a simple, object-oriented placeholder. It can be
-created by invoking the `lazy` function, passing a nullary work
-function as the single argument. When delivered, the container will
-call that work and collect the result as its answer. Any further
-invocations of deliver will return the answer without re-executing the
-work. However, if an exception is raised by the work during delivery
-the container will not be considered as delivered. In the case of a
-transient issue (such as a time-out), delivery can be attempted again
-until an answer is finally returned.
+created by invoking the `lazy` function, passing a work function and
+any arguments it needs. When delivered, the container will call that
+work and collect the result as its answer. Any further invocations of
+deliver will return the answer without re-executing the work. However,
+if an exception is raised by the work during delivery the container
+will not be considered as delivered. In the case of a transient issue
+(such as a time-out), delivery can be attempted again until an answer
+is finally returned.
 
 
 ## Lazy Proxy
@@ -87,6 +92,9 @@ itself. A proxy is created by invoking the `lazy_proxy` function, and
 passing a nullary work function as the single argument. If your work
 delivers an int, then treat the proxy like an int. If your work
 delivers a dictionary, then treat the proxy like it were a dictionary.
+
+
+### Proxy Problems
 
 A proxy tries fairly hard to act like the delivered value, by passing
 along almost every conceivable call to the underlying answer.
@@ -143,13 +151,14 @@ python setup.py install
 
 ## Related
 
-Lots of alternative implementations following different wavelengths of
-this concept. Here are some for your perusal.
+There are multiple alternative implementations following different
+wavelengths of this concept. Here are some for your perusal.
 
-* [concurrent.futures] - [Python 3.4] (in Beta) includes [PEP-3148]
+* [concurrent.futures] - [Python 3.4] includes [PEP-3148]
 * [futureutils] - Introduces futures and promises into iterators
 * [aplus] - Promises/A+ specification in Python
-* [promised] - Python "promise" for output of asynchronous operations, and callback chaining.
+* [promised] - Python "promise" for output of asynchronous operations,
+  and callback chaining.
 
 [concurrent.futures]: http://docs.python.org/dev/library/concurrent.futures.html
 [futureutils]: https://pypi.python.org/pypi/futureutils
@@ -160,7 +169,7 @@ this concept. Here are some for your perusal.
 
 ## Contact
 
-Christopher O'Brien <obriencj@gmail.com>
+Christopher O'Brien  <obriencj@gmail.com>
 
 
 ## License
@@ -178,4 +187,3 @@ Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, see
 <http://www.gnu.org/licenses/>.
-
