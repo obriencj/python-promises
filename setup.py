@@ -16,7 +16,6 @@
 
 
 """
-
 Promises for Python
 
 Yet another module for doing promises in python! This time with
@@ -25,11 +24,11 @@ wish someone smarter had worked on this.
 
 author: Christopher O'Brien  <obriencj@gmail.com>
 license: LGPL v.3
-
 """
 
 
 from setuptools import setup, Extension
+import multiprocessing
 
 
 ext = [ Extension("promises._proxy", ["promises/proxy.c"]), ]
@@ -48,11 +47,11 @@ setup( name = "promises",
        author = "Christopher O'Brien",
        author_email = "obriencj@gmail.com",
        url = "https://github.com/obriencj/python-promises",
-       license = "GNU Lesser General Public License", 
-       
+       license = "GNU Lesser General Public License",
+
        description = "Promises, container and transparent, with"
        " threading and multiprocessing support",
-       
+
        provides = [ "promises" ],
        requires = [],
        platforms = [ "python2 >= 2.6" ],
