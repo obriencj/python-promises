@@ -170,7 +170,7 @@ class MemoizedMultiCall(MultiCall):
     # against it post-delivery.
 
     def __init__(self, server):
-        super(MemoizedMultiCall, self).__init__(server)
+        MultiCall.__init__(self, server)
         self.__answers = None
 
 
