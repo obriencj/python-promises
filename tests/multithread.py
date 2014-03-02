@@ -21,103 +21,17 @@ license: LGPL v.3
 """
 
 
-from promises import is_promise, is_delivered, deliver
 from promises.multithread import ThreadExecutor, ProxyThreadExecutor
-from unittest import TestCase
+from .multiprocess import TestProcessExecutor
 
 
-def work_load(x):
-    #print "performing work_load", x
-    return x + 1
-
-
-def fail_load(x):
-    #print "fail_load raising"
-    raise TacoException("failed on %i" % x)
-
-
-class TacoException(Exception):
-    pass
-
-
-class TestThreadExecutor(TestCase):
-
+class TestThreadExecutor(TestProcessExecutor):
 
     def executor(self):
         return ThreadExecutor()
 
 
-    def test_managed(self):
-        with self.executor() as ex:
-            a = ex.future(work_load, -1)
-            self.assertTrue(is_promise(a))
-
-            # generate some minor workload, enough to engage a queue
-            values = [ex.future(work_load, x) for x in xrange(0, 999)]
-
-            b = ex.future(work_load, -101)
-            self.assertFalse(is_delivered(b))
-
-        # the managed interface implicitly calls the deliver() method
-        # on the executor, so by the time we get here, everything
-        # should be delivered.
-
-        self.assertTrue(is_promise(a))
-        self.assertTrue(is_delivered(a))
-        self.assertEqual(deliver(a), 0)
-
-        self.assertTrue(is_promise(b))
-        self.assertTrue(is_delivered(b))
-        self.assertEqual(deliver(b), -100)
-
-        self.assertEqual([deliver(v) for v in values],
-                         list(xrange(1, 1000)))
-
-
-    def test_blocking(self):
-        ex = self.executor()
-
-        # generate some minor workload, enough to engage a queue
-        values = [ex.future(work_load, x) for x in xrange(0, 999)]
-
-        b = ex.future(work_load, -101)
-        self.assertFalse(is_delivered(b))
-        self.assertEqual(deliver(b), -100)
-
-        ex.deliver()
-        self.assertTrue(ex.is_delivered())
-
-
-    def test_terminate(self):
-        ex = self.executor()
-
-        # generate some minor workload, enough to engage a queue
-        values = [ex.future(work_load, x) for x in xrange(0, 999)]
-
-        b = ex.future(work_load, -101)
-        self.assertFalse(is_delivered(b))
-
-        ex.terminate()
-        self.assertFalse(is_delivered(b))
-
-        self.assertTrue(ex.is_delivered())
-
-
-    def test_raises(self):
-        ex = self.executor()
-
-        # generate some minor workload, enough to engage a queue
-        values = [ex.future(work_load, x) for x in xrange(0, 999)]
-
-        b = ex.future(fail_load, -101)
-
-        self.assertFalse(is_delivered(b))
-        self.assertRaises(TacoException, lambda: deliver(b))
-
-        ex.terminate()
-
-
-class TestProxyThreadExecutor(TestThreadExecutor):
+class TestProxyThreadExecutor(TestProcessExecutor):
 
     def executor(self):
         return ProxyThreadExecutor()

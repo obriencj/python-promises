@@ -21,111 +21,24 @@ Multi-thread Promises for Python
 """
 
 
-from functools import partial
 from multiprocessing.pool import ThreadPool
-from promises import promise, promise_proxy
-
-import sys
+from promises import promise_proxy
+from .multiprocess import ProcessExecutor
 
 
 __all__ = ( 'ThreadExecutor', 'ProxyThreadExecutor' )
 
 
-def _perform_work(work):
-    """
-    This function is what the worker processes will use to collect the
-    result from work (whether via return or raise)
-    """
-
-    try:
-        return (True, work())
-    except Exception as exc:
-        return (False, (type(exc), exc, None))
-
-
-class ThreadExecutor(object):
+class ThreadExecutor(ProcessExecutor):
     """
     A way to provide multiple promises which will be delivered in a
     separate threads
     """
 
-
-    def __init__(self, threads=None):
-        self._threads = threads
-        self._pool = None
-
-
-    def __enter__(self):
-        return self
-
-
-    def __exit__(self, exc_type, _exc_val, _exc_tb):
-        """
-        Using the managed interface forces blocking delivery at the end of
-        the managed segment.
-        """
-
-        self.deliver()
-        return (exc_type is None)
-
-
-    def _promise(self):
-        """
-        override to use a different promise mechanism
-        """
-
-        return promise(blocking=True)
-
-
-    def future(self, work, *args, **kwds):
-        """
-        Promise to perform work in another process and to deliver the
-        result in the future. Returns a container promise with a
-        blocking deliver.
-        """
-
+    def _get_pool(self):
         if not self._pool:
-            self._pool = ThreadPool(processes=self._threads)
-
-        if args or kwds:
-            work = partial(work, *args, **kwds)
-
-        promised,setter,seterr = self._promise()
-
-        def callback(value):
-            success, result = value
-            if success:
-                setter(result)
-            else:
-                seterr(*result)
-
-        self._pool.apply_async(_perform_work, [work], {}, callback)
-        return promised
-
-
-    def terminate(self):
-        """
-        breaks all the remaining undelivered promises
-        """
-
-        self._pool.terminate()
-        self._pool = None
-
-
-    def deliver(self):
-        """
-        blocks until all underlying promises have been delivered
-        """
-
-        self._pool.close()
-        self._pool.join()
-        self._pool = None
-
-
-    def is_delivered(self):
-        # TODO better to ask if the pool is empty, check on this
-        # later.
-        return (self._pool is None)
+            self._pool = ThreadPool(processes=self._processes)
+        return self._pool
 
 
 class ProxyThreadExecutor(ThreadExecutor):

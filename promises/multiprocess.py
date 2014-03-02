@@ -79,6 +79,12 @@ class ProcessExecutor(object):
         return promise(blocking=True)
 
 
+    def _get_pool(self):
+        if not self._pool:
+            self._pool = Pool(processes=self._processes)
+        return self._pool
+
+
     def future(self, work, *args, **kwds):
         """
         Promise to perform work in another process and to deliver the
@@ -86,22 +92,24 @@ class ProcessExecutor(object):
         blocking deliver.
         """
 
-        if not self._pool:
-            self._pool = Pool(processes=self._processes)
-
         if args or kwds:
             work = partial(work, *args, **kwds)
 
         promised,setter,seterr = self._promise()
 
         def callback(value):
+            # value is collected as the result of the _perform_work
+            # function at the top of this module
             success, result = value
             if success:
                 setter(result)
             else:
                 seterr(*result)
 
-        self._pool.apply_async(_perform_work, [work], {}, callback)
+        # queue up the work in our pool
+        pool = self._get_pool()
+        pool.apply_async(_perform_work, [work], {}, callback)
+
         return promised
 
 
@@ -110,8 +118,9 @@ class ProcessExecutor(object):
         breaks all the remaining undelivered promises
         """
 
-        self._pool.terminate()
-        self._pool = None
+        if self._pool is not None:
+            self._pool.terminate()
+            self._pool = None
 
 
     def deliver(self):
@@ -119,9 +128,10 @@ class ProcessExecutor(object):
         blocks until all underlying promises have been delivered
         """
 
-        self._pool.close()
-        self._pool.join()
-        self._pool = None
+        if self._pool is not None:
+            self._pool.close()
+            self._pool.join()
+            self._pool = None
 
 
     def is_delivered(self):
