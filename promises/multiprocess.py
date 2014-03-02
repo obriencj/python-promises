@@ -31,9 +31,7 @@ import sys
 __all__ = ( 'ProcessExecutor', 'ProxyProcessExecutor' )
 
 
-# coverage doesn't see this get called in the other processes, so I
-# exclude it.
-def _perform_work(work): # pragma: no cover
+def _perform_work(work):
     """
     This function is what the worker processes will use to collect the
     result from work (whether via return or raise)
