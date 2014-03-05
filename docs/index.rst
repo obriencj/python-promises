@@ -13,6 +13,9 @@ Contents:
 
    overview
    promises
+   multiprocess
+   multithread
+   xmlrpc
 
 
 Indices and tables
