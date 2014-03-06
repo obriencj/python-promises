@@ -67,7 +67,7 @@
 
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">XML RPC MultiCall Promises</span>
+<span class="sd">XML RPC MultiCall Promises.</span>
 
 <span class="sd">:author: Christopher O&#39;Brien  &lt;obriencj@gmail.com&gt;</span>
 <span class="sd">:license: LGPL v.3</span>
@@ -81,7 +81,7 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span> <span class="s">&#39;LazyMultiCall&#39;</span><span class="p">,</span> <span class="s">&#39;ProxyMultiCall&#39;</span> <span class="p">)</span>
 
 
-<div class="viewcode-block" id="LazyMultiCall"><a class="viewcode-back" href="../../../promises/#promises.xmlrpc.LazyMultiCall">[docs]</a><span class="k">class</span> <span class="nc">LazyMultiCall</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="LazyMultiCall"><a class="viewcode-back" href="../../../xmlrpc/#promises.xmlrpc.LazyMultiCall">[docs]</a><span class="k">class</span> <span class="nc">LazyMultiCall</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A wrapper to xmlrpclib.MultiCall which allows the programmer to</span>
 <span class="sd">    receive promises for the calls as they are written, rather than</span>
@@ -93,6 +93,15 @@
 <span class="sd">    promised result, it is possible for the work to never be executed.</span>
 <span class="sd">    As such, it is inappropriate to expect the queued calls to be</span>
 <span class="sd">    triggered in any particular order, or at all.</span>
+
+<span class="sd">    When `group_calls` is greater than zero, queued requests will be</span>
+<span class="sd">    collected up to that many at a time, and then a new group will be</span>
+<span class="sd">    created for any further calls. Whenever a promise is delivered, it</span>
+<span class="sd">    also delivers all queued calls in its group.</span>
+
+<span class="sd">    This class supports the managed interface API, and as such can be</span>
+<span class="sd">    used via the `with` keyword. The managed interface delivers on all</span>
+<span class="sd">    promises when exiting.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__promise__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
@@ -202,10 +211,10 @@
         <span class="k">return</span> <span class="n">mc</span><span class="p">()[</span><span class="n">index</span><span class="p">]</span>
 
 </div>
-<div class="viewcode-block" id="ProxyMultiCall"><a class="viewcode-back" href="../../../promises/#promises.xmlrpc.ProxyMultiCall">[docs]</a><span class="k">class</span> <span class="nc">ProxyMultiCall</span><span class="p">(</span><span class="n">LazyMultiCall</span><span class="p">):</span>
+<div class="viewcode-block" id="ProxyMultiCall"><a class="viewcode-back" href="../../../xmlrpc/#promises.xmlrpc.ProxyMultiCall">[docs]</a><span class="k">class</span> <span class="nc">ProxyMultiCall</span><span class="p">(</span><span class="n">LazyMultiCall</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A PromiseMultiCall which will return Proxy instead of Container</span>
-<span class="sd">    promises.</span>
+<span class="sd">    A `LazyMultiCall` which will return `Proxy` instead of `Container`</span>
+<span class="sd">    style promises.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__promise__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>

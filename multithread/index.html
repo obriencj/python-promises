@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Module promises.multithread &mdash; promises 0.9.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="promises 0.9.0 documentation" href="../" />
+    <link rel="next" title="Module promises.xmlrpc" href="../xmlrpc/" />
+    <link rel="prev" title="Module promises.multiprocess" href="../multiprocess/" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../xmlrpc/" title="Module promises.xmlrpc"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../multiprocess/" title="Module promises.multiprocess"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../">promises 0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-promises.multithread">
+<span id="module-promises-multithread"></span><h1>Module promises.multithread<a class="headerlink" href="#module-promises.multithread" title="Permalink to this headline">¶</a></h1>
+<p>Multi-thread Promises for Python</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Christopher O&#8217;Brien  &lt;<a class="reference external" href="mailto:obriencj&#37;&#52;&#48;gmail&#46;com">obriencj<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">LGPL v.3</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="promises.multithread.ThreadExecutor">
+<em class="property">class </em><tt class="descclassname">promises.multithread.</tt><tt class="descname">ThreadExecutor</tt><big>(</big><em>processes=None</em><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ThreadExecutor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ThreadExecutor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../multiprocess/#promises.multiprocess.ProcessExecutor" title="promises.multiprocess.ProcessExecutor"><tt class="xref py py-class docutils literal"><span class="pre">promises.multiprocess.ProcessExecutor</span></tt></a></p>
+<p>A way to provide multiple promises which will be delivered in a
+separate threads</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="promises.multithread.ProxyThreadExecutor">
+<em class="property">class </em><tt class="descclassname">promises.multithread.</tt><tt class="descname">ProxyThreadExecutor</tt><big>(</big><em>processes=None</em><big>)</big><a class="reference internal" href="../_modules/promises/multithread/#ProxyThreadExecutor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multithread.ProxyThreadExecutor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#promises.multithread.ThreadExecutor" title="promises.multithread.ThreadExecutor"><tt class="xref py py-class docutils literal"><span class="pre">promises.multithread.ThreadExecutor</span></tt></a></p>
+<p>Creates transparent proxy promises, which will deliver in a
+separate thread</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../multiprocess/"
+                        title="previous chapter">Module promises.multiprocess</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../xmlrpc/"
+                        title="next chapter">Module promises.xmlrpc</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/multithread.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search/" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../xmlrpc/" title="Module promises.xmlrpc"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../multiprocess/" title="Module promises.multiprocess"
+             >previous</a> |</li>
+        <li><a href="../">promises 0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Christopher O&#39;Brien.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-47351906-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

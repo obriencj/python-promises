@@ -90,7 +90,7 @@
             <span class="s">&#39;is_promise&#39;</span><span class="p">,</span> <span class="s">&#39;is_delivered&#39;</span><span class="p">,</span> <span class="s">&#39;deliver&#39;</span><span class="p">,</span> <span class="p">)</span>
 
 
-<div class="viewcode-block" id="Container"><a class="viewcode-back" href="../../promises/#promises.Container">[docs]</a><span class="k">class</span> <span class="nc">Container</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Container</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Simple promise mechanism. Acts as a container to the promised work</span>
 <span class="sd">    until delivered, and there-after acts as a container to the return</span>
@@ -124,7 +124,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_answer</span> <span class="o">=</span> <span class="bp">None</span>
 
 
-<div class="viewcode-block" id="Container.is_delivered"><a class="viewcode-back" href="../../promises/#promises.Container.is_delivered">[docs]</a>    <span class="k">def</span> <span class="nf">is_delivered</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">is_delivered</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        True if the promised work has been called and an answer has been</span>
 <span class="sd">        recorded.</span>
@@ -132,8 +132,8 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_work</span> <span class="ow">is</span> <span class="bp">None</span>
 
-</div>
-<div class="viewcode-block" id="Container.deliver"><a class="viewcode-back" href="../../promises/#promises.Container.deliver">[docs]</a>    <span class="k">def</span> <span class="nf">deliver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">deliver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Deliver on promised work. Will only execute the work if an answer</span>
 <span class="sd">        has not already been found. If an exception is raised during</span>
@@ -156,10 +156,10 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_answer</span>
 
-</div></div>
+
 <div class="viewcode-block" id="is_promise"><a class="viewcode-back" href="../../promises/#promises.is_promise">[docs]</a><span class="k">def</span> <span class="nf">is_promise</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    True if obj is a promise (either a proxy or a container)</span>
+<span class="sd">    True if `obj` is a promise (either a proxy or a container)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="p">(</span><span class="n">is_proxy</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">or</span> \
@@ -167,19 +167,30 @@
                  <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s">&quot;deliver&quot;</span><span class="p">)))</span>
 
 </div>
-<div class="viewcode-block" id="is_delivered"><a class="viewcode-back" href="../../promises/#promises.is_delivered">[docs]</a><span class="k">def</span> <span class="nf">is_delivered</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+<div class="viewcode-block" id="is_delivered"><a class="viewcode-back" href="../../promises/#promises.is_delivered">[docs]</a><span class="k">def</span> <span class="nf">is_delivered</span><span class="p">(</span><span class="n">a_promise</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    True if a promise has been delivered</span>
+<span class="sd">    True if `a_promise` is a promise and has been delivered</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="n">is_proxy_delivered</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_proxy</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> \
         <span class="k">else</span> <span class="n">obj</span><span class="o">.</span><span class="n">is_delivered</span><span class="p">()</span>
 
 </div>
-<div class="viewcode-block" id="deliver"><a class="viewcode-back" href="../../promises/#promises.deliver">[docs]</a><span class="k">def</span> <span class="nf">deliver</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+<div class="viewcode-block" id="deliver"><a class="viewcode-back" href="../../promises/#promises.deliver">[docs]</a><span class="k">def</span> <span class="nf">deliver</span><span class="p">(</span><span class="n">on_promise</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    attempts to deliver on a promise, and returns the resulting</span>
-<span class="sd">    value.</span>
+<span class="sd">    Attempts to deliver on a promise, and returns the resulting</span>
+<span class="sd">    value. If the delivery of work causes an exception, it will be</span>
+<span class="sd">    raised here.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    on_promise : `Proxy` or `Container` promise</span>
+<span class="sd">      the promise to deliver on</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value</span>
+<span class="sd">      the promised work if it could be successfully computed</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="n">deliver_proxy</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_proxy</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> \
@@ -188,10 +199,21 @@
 </div>
 <div class="viewcode-block" id="lazy"><a class="viewcode-back" href="../../promises/#promises.lazy">[docs]</a><span class="k">def</span> <span class="nf">lazy</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    creates a new container promise to find an answer for work. If any</span>
-<span class="sd">    additional arguments or keywords are provided a partial will be</span>
-<span class="sd">    created to pass them to the work function and the partial will be</span>
-<span class="sd">    stored as the nullary work.</span>
+<span class="sd">    Creates a new container promise to find an answer for `work`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    work : `callable`</span>
+<span class="sd">      executed when the promise is delivered</span>
+<span class="sd">    *args</span>
+<span class="sd">      optional arguments to pass to work</span>
+<span class="sd">    **kwds</span>
+<span class="sd">      optional keyword arguments to pass to work</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    promise : `Container`</span>
+<span class="sd">      the container promise which will deliver on `work(*args, **kwds)`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">args</span> <span class="ow">or</span> <span class="n">kwds</span><span class="p">:</span>
@@ -201,10 +223,21 @@
 </div>
 <div class="viewcode-block" id="lazy_proxy"><a class="viewcode-back" href="../../promises/#promises.lazy_proxy">[docs]</a><span class="k">def</span> <span class="nf">lazy_proxy</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    creates a new proxy promise to find an answer for work. If any</span>
-<span class="sd">    additional arguments or keywords are provided a partial will be</span>
-<span class="sd">    created to pass them to the work function and the partial will be</span>
-<span class="sd">    stored as the nullary work.</span>
+<span class="sd">    Creates a new proxy promise to find an answer for `work`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    work : `callable`</span>
+<span class="sd">      executed when the promise is delivered</span>
+<span class="sd">    *args</span>
+<span class="sd">      optional arguments to pass to work</span>
+<span class="sd">    **kwds</span>
+<span class="sd">      optional keyword arguments to pass to work</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    promise : `Proxy`</span>
+<span class="sd">      the proxy promise which will deliver on `work(*args, **kwds)`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">args</span> <span class="ow">or</span> <span class="n">kwds</span><span class="p">:</span>
@@ -215,8 +248,7 @@
 <div class="viewcode-block" id="PromiseNotReady"><a class="viewcode-back" href="../../promises/#promises.PromiseNotReady">[docs]</a><span class="k">class</span> <span class="nc">PromiseNotReady</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Raised when attempting to deliver on a promise whose underlying</span>
-<span class="sd">    delivery function hasn&#39;t been called (see container_pair and</span>
-<span class="sd">    proxy_pair)</span>
+<span class="sd">    delivery function hasn&#39;t been called.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">pass</span>
@@ -225,7 +257,7 @@
 <div class="viewcode-block" id="PromiseAlreadyDelivered"><a class="viewcode-back" href="../../promises/#promises.PromiseAlreadyDelivered">[docs]</a><span class="k">class</span> <span class="nc">PromiseAlreadyDelivered</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Raised when a paired promise&#39;s delivery function is called more</span>
-<span class="sd">    than once (see container_pair and proxy_pair)</span>
+<span class="sd">    than once.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">pass</span>
@@ -287,15 +319,24 @@
 <span class="sd">    value into that promise, and a ternary function to feed an</span>
 <span class="sd">    exception to the promise.</span>
 
-<span class="sd">    If blocking is set to True, then any attempt to deliver on the</span>
-<span class="sd">    promise will block until/unless a value or exception has been set</span>
-<span class="sd">    via the setter or seterr functions.</span>
+<span class="sd">    If `blocking` is True, then any attempt to deliver on the promise</span>
+<span class="sd">    will block until/unless a value or exception has been set via the</span>
+<span class="sd">    setter or seterr functions.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    promise : `Container`</span>
+<span class="sd">      promise acting as a placeholder for future data</span>
+<span class="sd">    setter : `function(value)`</span>
+<span class="sd">      function which delivers a value to fulfill the promise</span>
+<span class="sd">    seterr : `function(exc_type, exc_inst, exc_tb)`</span>
+<span class="sd">      function which delivers exc_info to raise on delivery of the promise</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; p,setter,seterr = promise()</span>
+<span class="sd">    &gt;&gt;&gt; prom, setter, seterr = promise()</span>
 <span class="sd">    &gt;&gt;&gt; setter(5)</span>
-<span class="sd">    &gt;&gt;&gt; deliver(p)</span>
+<span class="sd">    &gt;&gt;&gt; deliver(prom)</span>
 <span class="sd">    5</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -308,16 +349,24 @@
 <span class="sd">    value into that promise, and a ternary function to feed an</span>
 <span class="sd">    exception to the promise.</span>
 
-<span class="sd">    If blocking is set to True, then any attempt to deliver on the</span>
-<span class="sd">    promise (including accessing its members) will block until/unless</span>
-<span class="sd">    a value or exception has been set via the setter or seterr</span>
-<span class="sd">    functions.</span>
+<span class="sd">    If `blocking` is True, then any attempt to deliver on the promise</span>
+<span class="sd">    (including accessing its members) will block until/unless a value</span>
+<span class="sd">    or exception has been set via the setter or seterr functions.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    promise : `Proxy`</span>
+<span class="sd">      promise acting as a placeholder for future data</span>
+<span class="sd">    setter : `function(value)`</span>
+<span class="sd">      function which delivers a value to fulfill the promise</span>
+<span class="sd">    seterr : `function(exc_type, exc_inst, exc_tb)`</span>
+<span class="sd">      function which delivers exc_info to raise on delivery of the promise</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; p,setter,seterr = promise_proxy()</span>
+<span class="sd">    &gt;&gt;&gt; prom, setter, seterr = promise_proxy()</span>
 <span class="sd">    &gt;&gt;&gt; setter(5)</span>
-<span class="sd">    &gt;&gt;&gt; promise</span>
+<span class="sd">    &gt;&gt;&gt; prom</span>
 <span class="sd">    5</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 

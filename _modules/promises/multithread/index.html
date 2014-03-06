@@ -82,7 +82,7 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span> <span class="s">&#39;ThreadExecutor&#39;</span><span class="p">,</span> <span class="s">&#39;ProxyThreadExecutor&#39;</span> <span class="p">)</span>
 
 
-<div class="viewcode-block" id="ThreadExecutor"><a class="viewcode-back" href="../../../promises/#promises.multithread.ThreadExecutor">[docs]</a><span class="k">class</span> <span class="nc">ThreadExecutor</span><span class="p">(</span><span class="n">ProcessExecutor</span><span class="p">):</span>
+<div class="viewcode-block" id="ThreadExecutor"><a class="viewcode-back" href="../../../multithread/#promises.multithread.ThreadExecutor">[docs]</a><span class="k">class</span> <span class="nc">ThreadExecutor</span><span class="p">(</span><span class="n">ProcessExecutor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A way to provide multiple promises which will be delivered in a</span>
 <span class="sd">    separate threads</span>
@@ -94,7 +94,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pool</span>
 
 </div>
-<div class="viewcode-block" id="ProxyThreadExecutor"><a class="viewcode-back" href="../../../promises/#promises.multithread.ProxyThreadExecutor">[docs]</a><span class="k">class</span> <span class="nc">ProxyThreadExecutor</span><span class="p">(</span><span class="n">ThreadExecutor</span><span class="p">):</span>
+<div class="viewcode-block" id="ProxyThreadExecutor"><a class="viewcode-back" href="../../../multithread/#promises.multithread.ProxyThreadExecutor">[docs]</a><span class="k">class</span> <span class="nc">ProxyThreadExecutor</span><span class="p">(</span><span class="n">ThreadExecutor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates transparent proxy promises, which will deliver in a</span>
 <span class="sd">    separate thread</span>

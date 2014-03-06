@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Module promises.multiprocess &mdash; promises 0.9.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="promises 0.9.0 documentation" href="../" />
+    <link rel="next" title="Module promises.multithread" href="../multithread/" />
+    <link rel="prev" title="Module promises" href="../promises/" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../multithread/" title="Module promises.multithread"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../promises/" title="Module promises"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../">promises 0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-promises.multiprocess">
+<span id="module-promises-multiprocess"></span><h1>Module promises.multiprocess<a class="headerlink" href="#module-promises.multiprocess" title="Permalink to this headline">¶</a></h1>
+<p>Multi-process Promises for Python</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Christopher O&#8217;Brien  &lt;<a class="reference external" href="mailto:obriencj&#37;&#52;&#48;gmail&#46;com">obriencj<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</td>
+</tr>
+<tr class="field-even field"><th class="field-name">license:</th><td class="field-body">LGPL v.3</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="promises.multiprocess.ProcessExecutor">
+<em class="property">class </em><tt class="descclassname">promises.multiprocess.</tt><tt class="descname">ProcessExecutor</tt><big>(</big><em>processes=None</em><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProcessExecutor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProcessExecutor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Create promises which will deliver in a separate process.</p>
+<dl class="method">
+<dt id="promises.multiprocess.ProcessExecutor.deliver">
+<tt class="descname">deliver</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProcessExecutor.deliver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProcessExecutor.deliver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deliver on all underlying promises. Blocks until complete.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="promises.multiprocess.ProcessExecutor.future">
+<tt class="descname">future</tt><big>(</big><em>work</em>, <em>*args</em>, <em>**kwds</em><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProcessExecutor.future"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProcessExecutor.future" title="Permalink to this definition">¶</a></dt>
+<dd><p>Promise to deliver on the results of work in the future.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>work</strong> : <cite>callable</cite></p>
+<blockquote>
+<div><p>This is the work which will be performed to deliver on the
+future.</p>
+</div></blockquote>
+<p><strong>*args</strong> : <cite>optional positional parameters</cite></p>
+<blockquote>
+<div><p>arguments to the <cite>work</cite> function</p>
+</div></blockquote>
+<p><strong>**kwds</strong> : <cite>optional named parameters</cite></p>
+<blockquote>
+<div><p>keyword arguments to the <cite>work</cite> function</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>value</strong> : <cite>promise</cite></p>
+<blockquote class="last">
+<div><p>a promise acting as a placeholder for the result of
+evaluating <cite>work(*args, **kwds)</cite>. Note that calling <cite>deliver</cite>
+on this promise will potentially block until the underlying
+result is available.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="promises.multiprocess.ProcessExecutor.terminate">
+<tt class="descname">terminate</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProcessExecutor.terminate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProcessExecutor.terminate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Breaks all the remaining undelivered promises, halts execution of
+any parallel work being performed.</p>
+<p>Any promise which had not managed to be delivered will never
+be delivered after calling <cite>terminate</cite>. Attempting to call
+<cite>deliver</cite> on them will result in a deadlock.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="promises.multiprocess.ProxyProcessExecutor">
+<em class="property">class </em><tt class="descclassname">promises.multiprocess.</tt><tt class="descname">ProxyProcessExecutor</tt><big>(</big><em>processes=None</em><big>)</big><a class="reference internal" href="../_modules/promises/multiprocess/#ProxyProcessExecutor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.multiprocess.ProxyProcessExecutor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#promises.multiprocess.ProcessExecutor" title="promises.multiprocess.ProcessExecutor"><tt class="xref py py-class docutils literal"><span class="pre">promises.multiprocess.ProcessExecutor</span></tt></a></p>
+<p>Create transparent proxy promises which will deliver in a separate
+process.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../promises/"
+                        title="previous chapter">Module promises</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../multithread/"
+                        title="next chapter">Module promises.multithread</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/multiprocess.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search/" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../multithread/" title="Module promises.multithread"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../promises/" title="Module promises"
+             >previous</a> |</li>
+        <li><a href="../">promises 0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Christopher O&#39;Brien.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-47351906-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

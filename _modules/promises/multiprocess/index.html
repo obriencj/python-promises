@@ -74,7 +74,6 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span> <span class="nn">multiprocessing.pool</span> <span class="kn">import</span> <span class="n">Pool</span>
 <span class="kn">from</span> <span class="nn">promises</span> <span class="kn">import</span> <span class="n">promise</span><span class="p">,</span> <span class="n">promise_proxy</span>
 
@@ -82,7 +81,7 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span> <span class="s">&#39;ProcessExecutor&#39;</span><span class="p">,</span> <span class="s">&#39;ProxyProcessExecutor&#39;</span> <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_perform_work</span><span class="p">(</span><span class="n">work</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_perform_work</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function is what the worker processes will use to collect the</span>
 <span class="sd">    result from work (whether via return or raise)</span>
@@ -94,8 +93,10 @@
 <span class="sd">      if an exception was raised</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">work</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
+
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">work</span><span class="p">())</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">work</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
         <span class="c"># we are discarding the stack trace as it won&#39;t survive</span>
         <span class="c"># pickling (which is how it will be passed back to the</span>
@@ -103,7 +104,7 @@
         <span class="k">return</span> <span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span> <span class="n">exc</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
 
 
-<div class="viewcode-block" id="ProcessExecutor"><a class="viewcode-back" href="../../../promises/#promises.multiprocess.ProcessExecutor">[docs]</a><span class="k">class</span> <span class="nc">ProcessExecutor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ProcessExecutor"><a class="viewcode-back" href="../../../multiprocess/#promises.multiprocess.ProcessExecutor">[docs]</a><span class="k">class</span> <span class="nc">ProcessExecutor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create promises which will deliver in a separate process.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -145,7 +146,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pool</span>
 
 
-<div class="viewcode-block" id="ProcessExecutor.future"><a class="viewcode-back" href="../../../promises/#promises.multiprocess.ProcessExecutor.future">[docs]</a>    <span class="k">def</span> <span class="nf">future</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<div class="viewcode-block" id="ProcessExecutor.future"><a class="viewcode-back" href="../../../multiprocess/#promises.multiprocess.ProcessExecutor.future">[docs]</a>    <span class="k">def</span> <span class="nf">future</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Promise to deliver on the results of work in the future.</span>
 
@@ -168,9 +169,6 @@
 <span class="sd">          result is available.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="n">args</span> <span class="ow">or</span> <span class="n">kwds</span><span class="p">:</span>
-            <span class="n">work</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
-
         <span class="n">promised</span><span class="p">,</span><span class="n">setter</span><span class="p">,</span><span class="n">seterr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_promise</span><span class="p">()</span>
 
         <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
@@ -184,12 +182,12 @@
 
         <span class="c"># queue up the work in our pool</span>
         <span class="n">pool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_pool</span><span class="p">()</span>
-        <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_perform_work</span><span class="p">,</span> <span class="p">[</span><span class="n">work</span><span class="p">],</span> <span class="p">{},</span> <span class="n">callback</span><span class="p">)</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_perform_work</span><span class="p">,</span> <span class="p">[</span><span class="n">work</span><span class="p">,</span> <span class="n">args</span><span class="p">],</span> <span class="n">kwds</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">promised</span>
 
 </div>
-<div class="viewcode-block" id="ProcessExecutor.terminate"><a class="viewcode-back" href="../../../promises/#promises.multiprocess.ProcessExecutor.terminate">[docs]</a>    <span class="k">def</span> <span class="nf">terminate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ProcessExecutor.terminate"><a class="viewcode-back" href="../../../multiprocess/#promises.multiprocess.ProcessExecutor.terminate">[docs]</a>    <span class="k">def</span> <span class="nf">terminate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Breaks all the remaining undelivered promises, halts execution of</span>
 <span class="sd">        any parallel work being performed.</span>
@@ -209,7 +207,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_pool</span> <span class="o">=</span> <span class="bp">None</span>
 
 </div>
-<div class="viewcode-block" id="ProcessExecutor.deliver"><a class="viewcode-back" href="../../../promises/#promises.multiprocess.ProcessExecutor.deliver">[docs]</a>    <span class="k">def</span> <span class="nf">deliver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ProcessExecutor.deliver"><a class="viewcode-back" href="../../../multiprocess/#promises.multiprocess.ProcessExecutor.deliver">[docs]</a>    <span class="k">def</span> <span class="nf">deliver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Deliver on all underlying promises. Blocks until complete.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -220,7 +218,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_pool</span> <span class="o">=</span> <span class="bp">None</span>
 
 </div></div>
-<div class="viewcode-block" id="ProxyProcessExecutor"><a class="viewcode-back" href="../../../promises/#promises.multiprocess.ProxyProcessExecutor">[docs]</a><span class="k">class</span> <span class="nc">ProxyProcessExecutor</span><span class="p">(</span><span class="n">ProcessExecutor</span><span class="p">):</span>
+<div class="viewcode-block" id="ProxyProcessExecutor"><a class="viewcode-back" href="../../../multiprocess/#promises.multiprocess.ProxyProcessExecutor">[docs]</a><span class="k">class</span> <span class="nc">ProxyProcessExecutor</span><span class="p">(</span><span class="n">ProcessExecutor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create transparent proxy promises which will deliver in a separate</span>
 <span class="sd">    process.</span>
