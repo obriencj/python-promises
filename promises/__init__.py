@@ -107,7 +107,7 @@ class Container(object):
 
 def is_promise(obj):
     """
-    True if obj is a promise (either a proxy or a container)
+    True if `obj` is a promise (either a proxy or a container)
     """
 
     return (is_proxy(obj) or \
@@ -115,19 +115,30 @@ def is_promise(obj):
                  hasattr(obj, "deliver")))
 
 
-def is_delivered(obj):
+def is_delivered(a_promise):
     """
-    True if a promise has been delivered
+    True if `a_promise` is a promise and has been delivered
     """
 
     return is_proxy_delivered(obj) if is_proxy(obj) \
         else obj.is_delivered()
 
 
-def deliver(obj):
+def deliver(on_promise):
     """
-    attempts to deliver on a promise, and returns the resulting
-    value.
+    Attempts to deliver on a promise, and returns the resulting
+    value. If the delivery of work causes an exception, it will be
+    raised here.
+
+    Parameters
+    ----------
+    on_promise : `Proxy` or `Container` promise
+      the promise to deliver on
+
+    Returns
+    -------
+    value
+      the promised work if it could be successfully computed
     """
 
     return deliver_proxy(obj) if is_proxy(obj) \
@@ -136,10 +147,21 @@ def deliver(obj):
 
 def lazy(work, *args, **kwds):
     """
-    creates a new container promise to find an answer for work. If any
-    additional arguments or keywords are provided a partial will be
-    created to pass them to the work function and the partial will be
-    stored as the nullary work.
+    Creates a new container promise to find an answer for `work`.
+
+    Parameters
+    ----------
+    work : `callable`
+      executed when the promise is delivered
+    *args
+      optional arguments to pass to work
+    **kwds
+      optional keyword arguments to pass to work
+
+    Returns
+    -------
+    promise : `Container`
+      the container promise which will deliver on `work(*args, **kwds)`
     """
 
     if args or kwds:
@@ -149,10 +171,21 @@ def lazy(work, *args, **kwds):
 
 def lazy_proxy(work, *args, **kwds):
     """
-    creates a new proxy promise to find an answer for work. If any
-    additional arguments or keywords are provided a partial will be
-    created to pass them to the work function and the partial will be
-    stored as the nullary work.
+    Creates a new proxy promise to find an answer for `work`.
+
+    Parameters
+    ----------
+    work : `callable`
+      executed when the promise is delivered
+    *args
+      optional arguments to pass to work
+    **kwds
+      optional keyword arguments to pass to work
+
+    Returns
+    -------
+    promise : `Proxy`
+      the proxy promise which will deliver on `work(*args, **kwds)`
     """
 
     if args or kwds:
@@ -163,8 +196,7 @@ def lazy_proxy(work, *args, **kwds):
 class PromiseNotReady(Exception):
     """
     Raised when attempting to deliver on a promise whose underlying
-    delivery function hasn't been called (see container_pair and
-    proxy_pair)
+    delivery function hasn't been called.
     """
 
     pass
@@ -173,7 +205,7 @@ class PromiseNotReady(Exception):
 class PromiseAlreadyDelivered(Exception):
     """
     Raised when a paired promise's delivery function is called more
-    than once (see container_pair and proxy_pair)
+    than once.
     """
 
     pass
@@ -235,15 +267,24 @@ def promise(blocking=False):
     value into that promise, and a ternary function to feed an
     exception to the promise.
 
-    If blocking is set to True, then any attempt to deliver on the
-    promise will block until/unless a value or exception has been set
-    via the setter or seterr functions.
+    If `blocking` is True, then any attempt to deliver on the promise
+    will block until/unless a value or exception has been set via the
+    setter or seterr functions.
+
+    Returns
+    -------
+    promise : `Container`
+      promise acting as a placeholder for future data
+    setter : `function(value)`
+      function which delivers a value to fulfill the promise
+    seterr : `function(exc_type, exc_inst, exc_tb)`
+      function which delivers exc_info to raise on delivery of the promise
 
     Examples
     --------
-    >>> p,setter,seterr = promise()
+    >>> prom, setter, seterr = promise()
     >>> setter(5)
-    >>> deliver(p)
+    >>> deliver(prom)
     5
     """
 
@@ -256,16 +297,24 @@ def promise_proxy(blocking=False):
     value into that promise, and a ternary function to feed an
     exception to the promise.
 
-    If blocking is set to True, then any attempt to deliver on the
-    promise (including accessing its members) will block until/unless
-    a value or exception has been set via the setter or seterr
-    functions.
+    If `blocking` is True, then any attempt to deliver on the promise
+    (including accessing its members) will block until/unless a value
+    or exception has been set via the setter or seterr functions.
+
+    Returns
+    -------
+    promise : `Proxy`
+      promise acting as a placeholder for future data
+    setter : `function(value)`
+      function which delivers a value to fulfill the promise
+    seterr : `function(exc_type, exc_inst, exc_tb)`
+      function which delivers exc_info to raise on delivery of the promise
 
     Examples
     --------
-    >>> p,setter,seterr = promise_proxy()
+    >>> prom, setter, seterr = promise_proxy()
     >>> setter(5)
-    >>> promise
+    >>> prom
     5
     """
 

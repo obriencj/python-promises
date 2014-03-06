@@ -14,7 +14,7 @@
 
 
 """
-XML RPC MultiCall Promises
+XML RPC MultiCall Promises.
 
 :author: Christopher O'Brien  <obriencj@gmail.com>
 :license: LGPL v.3
@@ -40,6 +40,15 @@ class LazyMultiCall(object):
     promised result, it is possible for the work to never be executed.
     As such, it is inappropriate to expect the queued calls to be
     triggered in any particular order, or at all.
+
+    When `group_calls` is greater than zero, queued requests will be
+    collected up to that many at a time, and then a new group will be
+    created for any further calls. Whenever a promise is delivered, it
+    also delivers all queued calls in its group.
+
+    This class supports the managed interface API, and as such can be
+    used via the `with` keyword. The managed interface delivers on all
+    promises when exiting.
     """
 
     def __promise__(self, work, *args, **kwds):
@@ -151,8 +160,8 @@ class LazyMultiCall(object):
 
 class ProxyMultiCall(LazyMultiCall):
     """
-    A PromiseMultiCall which will return Proxy instead of Container
-    promises.
+    A `LazyMultiCall` which will return `Proxy` instead of `Container`
+    style promises.
     """
 
     def __promise__(self, work, *args, **kwds):
