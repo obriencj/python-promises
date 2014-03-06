@@ -195,6 +195,7 @@ _static _templates $(DEPLOYDIR):
 
 build-project:
 	pushd ../ >/dev/null ;\
+	rm -rf build/* ;\
 	./setup.py clean build ;\
 	popd
 
