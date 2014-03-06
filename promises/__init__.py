@@ -120,8 +120,8 @@ def is_delivered(a_promise):
     True if `a_promise` is a promise and has been delivered
     """
 
-    return is_proxy_delivered(obj) if is_proxy(obj) \
-        else obj.is_delivered()
+    return is_proxy_delivered(a_promise) if is_proxy(a_promise) \
+        else a_promise.is_delivered()
 
 
 def deliver(on_promise):
@@ -141,8 +141,8 @@ def deliver(on_promise):
       the promised work if it could be successfully computed
     """
 
-    return deliver_proxy(obj) if is_proxy(obj) \
-        else obj.deliver()
+    return deliver_proxy(on_promise) if is_proxy(on_promise) \
+        else on_promise.deliver()
 
 
 def lazy(work, *args, **kwds):
