@@ -6,8 +6,6 @@
 Promises -- Transparent proxies for future values
 =================================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 4
 

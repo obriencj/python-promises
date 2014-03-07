@@ -172,8 +172,8 @@
 <span class="sd">    True if `a_promise` is a promise and has been delivered</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">is_proxy_delivered</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_proxy</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> \
-        <span class="k">else</span> <span class="n">obj</span><span class="o">.</span><span class="n">is_delivered</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">is_proxy_delivered</span><span class="p">(</span><span class="n">a_promise</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_proxy</span><span class="p">(</span><span class="n">a_promise</span><span class="p">)</span> \
+        <span class="k">else</span> <span class="n">a_promise</span><span class="o">.</span><span class="n">is_delivered</span><span class="p">()</span>
 
 </div>
 <div class="viewcode-block" id="deliver"><a class="viewcode-back" href="../../promises/#promises.deliver">[docs]</a><span class="k">def</span> <span class="nf">deliver</span><span class="p">(</span><span class="n">on_promise</span><span class="p">):</span>
@@ -193,8 +193,8 @@
 <span class="sd">      the promised work if it could be successfully computed</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">deliver_proxy</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_proxy</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> \
-        <span class="k">else</span> <span class="n">obj</span><span class="o">.</span><span class="n">deliver</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">deliver_proxy</span><span class="p">(</span><span class="n">on_promise</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_proxy</span><span class="p">(</span><span class="n">on_promise</span><span class="p">)</span> \
+        <span class="k">else</span> <span class="n">on_promise</span><span class="o">.</span><span class="n">deliver</span><span class="p">()</span>
 
 </div>
 <div class="viewcode-block" id="lazy"><a class="viewcode-back" href="../../promises/#promises.lazy">[docs]</a><span class="k">def</span> <span class="nf">lazy</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
