@@ -41,6 +41,10 @@ def create_exc_tb(exception=None):
         return sys.exc_info()
 
 
+def born_to_fail():
+    raise Exception("dummy exception")
+
+
 class TestContainer(unittest.TestCase):
     """
     tests for the ContainerPromise class
@@ -53,6 +57,10 @@ class TestContainer(unittest.TestCase):
 
     def promise(self, blocking=False):
         return promise(blocking=blocking)
+
+
+    def breakable(self, work, *args, **kwds):
+        return breakable(work, *args, **kwds)
 
 
     def assert_called_once(self, work):
@@ -164,6 +172,70 @@ class TestContainer(unittest.TestCase):
         self.assertEqual(x, 6)
 
 
+    def test_repr(self):
+        promised = self.lazy(lambda: 5)
+        self.assertEqual("<promises.Container undelivered>",
+                         promise_repr(promised))
+
+        deliver(promised)
+
+        self.assertEqual("<promises.Container delivered>",
+                         promise_repr(promised))
+
+        promised = self.breakable(born_to_fail)
+        self.assertEqual("<promises.Container undelivered>",
+                         promise_repr(promised))
+
+        deliver(promised)
+
+        self.assertEqual("<promises.Container broken>",
+                         promise_repr(promised))
+
+        self.assertEqual("5", promise_repr(5))
+
+
+    def test_broken(self):
+        # test that a breakable that doesn't break will function
+        # correctly
+        promised = self.breakable(lambda: 5)
+        self.assertTrue(is_promise(promised))
+        self.assertFalse(is_delivered(promised))
+
+        deliver(promised)
+        self.assertTrue(is_delivered(promised))
+        self.assertEqual(deliver(promised), 5)
+
+        # create a breakable that will definitely break
+        promised = self.breakable(born_to_fail)
+        self.assertTrue(is_promise(promised))
+        self.assertFalse(is_delivered(promised))
+
+        # breakable promises count as delivered if they break, but
+        # they return a BrokenPromise instance
+        deliver(promised)
+        self.assertTrue(is_delivered(promised))
+        self.assertTrue(isinstance(deliver(promised), BrokenPromise))
+
+
+    def test_breakable_deliver(self):
+        # a promise that will definitely fail
+        promised = self.lazy(born_to_fail)
+        self.assertTrue(is_promise(promised))
+        self.assertFalse(is_delivered(promised))
+
+        # check that delivery does indeed raise an Exception and
+        # doesn't cause the delivery to take.
+        self.assertRaises(Exception, lambda: deliver(promised))
+        self.assertFalse(is_delivered(promised))
+
+        # attempt breakable delivery. Should not raise, but should
+        # instead return a BrokenPromise. Since the promise wasn't
+        # created breakable, it will still not count as delivered.
+        broken = breakable_deliver(promised)
+        self.assertTrue(isinstance(broken, BrokenPromise))
+        self.assertFalse(is_delivered(promised))
+
+
 class TestProxy(TestContainer):
     """
     tests for the ProxyPromise class
@@ -176,6 +248,10 @@ class TestProxy(TestContainer):
 
     def promise(self, blocking=False):
         return promise_proxy(blocking=blocking)
+
+
+    def breakable(self, work, *args, **kwds):
+        return breakable_proxy(work, *args, **kwds)
 
 
     def test_proxy_equality(self):
@@ -249,6 +325,24 @@ class TestProxy(TestContainer):
         self.assertTrue(FB == FA)
 
 
+    def test_repr(self):
+        promised = self.lazy(lambda: 5)
+        self.assertEqual("<promises.Proxy undelivered>",
+                         promise_repr(promised))
+
+        deliver(promised)
+
+        self.assertEqual("<promises.Proxy delivered>",
+                         promise_repr(promised))
+
+        promised = self.breakable(born_to_fail)
+        self.assertEqual("<promises.Proxy undelivered>",
+                         promise_repr(promised))
+
+        deliver(promised)
+
+        self.assertEqual("<promises.Proxy broken>",
+                         promise_repr(promised))
 
 
 #
