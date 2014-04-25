@@ -109,6 +109,16 @@ class Container(object):
         return self._answer
 
 
+    def __repr__(self):
+        answer = self._answer
+        if answer is None:
+            return "<promises.Container undelivered>"
+        elif isinstance(answer, BrokenPromise):
+            return "<promises.Container broken>"
+        else:
+            return "<promises.Container delivered>"
+
+
 def is_promise(obj):
     """
     True if `obj` is a promise (either a proxy or a container)
@@ -334,12 +344,33 @@ class BrokenPromise(object):
 
     def __init__(self, reason=None):
         self.reason = reason
+        # self._retry = retry
+
+
+    # def retry(self):
+    #     """
+    #     If this broken promise was created with a callable retry value,
+    #     attempts to call and returns the result. If retry was
+    #     specified but was non-callable, returns retry. If retry was
+    #     not specified, or was None, returns self (the BrokenPromise
+    #     instance).
+    #     """
+    #
+    #     ret = self._retry
+    #     if ret is None:
+    #         return self
+    #     elif callable(ret):
+    #         return ret()
+    #     else:
+    #         return ret
 
 
 def _breakable_work(work, *args, **kwds):
     try:
         result = work(*args, **kwds)
     except Exception as ex:
+        #retry = partial(work, *args, **kwds)
+        #result = BrokenPromise(reason=exc_info(), retry=retry)
         result = BrokenPromise(reason=exc_info())
     return result
 
@@ -405,19 +436,18 @@ def promise_repr(p):
     the delivery indicates that the promise was broken.
     """
 
-    if not is_promise(p):
+    if not is_proxy(p):
+        # non-promises and container promises just get a normal repr
         return repr(p)
 
-    name = type(p).__name__
-    done = is_delivered(p)
-    broken = done and isinstance(breakable_deliver(p), BrokenPromise)
+    elif not is_delivered(p):
+        return "<promises.Proxy undelivered>"
 
-    if broken:
-        return "<promises.%s broken>" % name
-    elif done:
-        return "<promises.%s delivered>" % name
+    elif isinstance(breakable_deliver(p), BrokenPromise):
+        return "<promises.Proxy broken>"
+
     else:
-        return "<promises.%s undelivered>" % name
+        return "<promises.Proxy delivered>"
 
 
 #
