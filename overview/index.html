@@ -119,15 +119,43 @@ if an exception is raised by the work during delivery the container will
 not be considered as delivered. In the case of a transient issue (such
 as a time-out), delivery can be attempted again until an answer is
 finally returned.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">promises</span> <span class="kn">import</span> <span class="n">lazy</span><span class="p">,</span> <span class="n">is_delivered</span><span class="p">,</span> <span class="n">deliver</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">lazy</span><span class="p">(</span><span class="nb">set</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_delivered</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">A</span>
+<span class="go">&lt;promises.Container undelivered&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">deliver</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="go">set([1, 2, 3])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">A</span>
+<span class="go">&lt;promises.Container delivered&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_delivered</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="lazy-proxy">
 <h2>Lazy Proxy<a class="headerlink" href="#lazy-proxy" title="Permalink to this headline">¶</a></h2>
-<p>Proxies are a way to write promises without <em>looking</em> like you&#8217;re
-writing promises. You treat the proxy as though it were the answer
+<p>Proxies are a way to consume promises without <em>looking</em> like you&#8217;re
+consuming promises. You treat the proxy as though it were the answer
 itself. A proxy is created by invoking the <tt class="docutils literal"><span class="pre">lazy_proxy</span></tt> function, and
-passing a nullary work function as the single argument. If your work
+passing a work function and any arguments it needs. If your work
 delivers an int, then treat the proxy like an int. If your work delivers
 a dictionary, then treat the proxy like it were a dictionary.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">promises</span> <span class="kn">import</span> <span class="n">lazy_proxy</span><span class="p">,</span> <span class="n">is_delivered</span><span class="p">,</span> <span class="n">promise_repr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">lazy_proxy</span><span class="p">(</span><span class="nb">set</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_delivered</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">promise_repr</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+<span class="go">&lt;promises.Proxy undelivered&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">B</span>
+<span class="go">set([1, 2, 3])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">promise_repr</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+<span class="go">&lt;promises.Proxy delivered&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_delivered</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
 <div class="section" id="proxy-problems">
 <h3>Proxy Problems<a class="headerlink" href="#proxy-problems" title="Permalink to this headline">¶</a></h3>
 <p>A proxy tries fairly hard to act like the delivered value, by passing
@@ -161,6 +189,24 @@ equal.</p>
 </pre></div>
 </div>
 </div>
+</div>
+<div class="section" id="broken-promises">
+<h2>Broken Promises<a class="headerlink" href="#broken-promises" title="Permalink to this headline">¶</a></h2>
+<p>The default behavior of <tt class="docutils literal"><span class="pre">deliver</span></tt> on a promise will allow any raised
+exception to propagate up. This may be undesireable, so there are three
+ways to instead gather a <tt class="docutils literal"><span class="pre">BrokenPromise</span></tt> which will wrap any raised
+exception and be returned as the result.</p>
+<p>The functions <tt class="docutils literal"><span class="pre">breakable</span></tt> and <tt class="docutils literal"><span class="pre">breakable_proxy</span></tt> will create a
+container and proxy promise (respectively) for a piece of work. These
+functions wrap the work in a try/except clause to catch any exceptions.
+A promise created with these functions way will be considered delivered
+but broken should it raise during delivery, and will not re-attempt
+delivery.</p>
+<p>The function <tt class="docutils literal"><span class="pre">breakable_deliver</span></tt> attempts delivery on a promise
+generated from <tt class="docutils literal"><span class="pre">lazy</span></tt> or <tt class="docutils literal"><span class="pre">lazy_proxy</span></tt>. If the promise raises during
+delivery, a <tt class="docutils literal"><span class="pre">BrokenPromise</span></tt> is generated and returned. However, the
+promise will not be considered delivered, and any future attempts at
+delivery will execute the work.</p>
 </div>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -227,6 +273,7 @@ along with this library; if not, see <a class="reference external" href="http://
 <li><a class="reference internal" href="#proxy-problems">Proxy Problems</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#broken-promises">Broken Promises</a></li>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#install">Install</a></li>
 <li><a class="reference internal" href="#related">Related</a></li>
@@ -288,7 +335,7 @@ along with this library; if not, see <a class="reference external" href="http://
 
     <div class="footer">
         &copy; Copyright 2014, Christopher O&#39;Brien.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
