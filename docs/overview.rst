@@ -20,8 +20,8 @@ experiment.
    GitHub <https://github.com/obriencj/python-promises/>`__
 -  python-promises not on PyPI until version 1.0.0
 
-These Python Promises
----------------------
+Using promises
+--------------
 
 *This is very much a work in progress. I am still working out how much I
 want to explain, in what order, etc. It may be best to just expect that
@@ -84,7 +84,7 @@ finally returned.
     >>> deliver(A)
     set([1, 2, 3])
     >>> print A
-    <promises.Container delivered>
+    <promises.Container delivered:set([1, 2, 3])>
     >>> is_delivered(A)
     True
 
@@ -109,7 +109,7 @@ a dictionary, then treat the proxy like it were a dictionary.
     >>> print B
     set([1, 2, 3])
     >>> print promise_repr(B)
-    <promises.Proxy delivered>
+    <promises.Proxy delivered:set([1, 2, 3])>
     >>> is_delivered(B)
     True
 
@@ -179,14 +179,77 @@ Requirements
    unless someone else wants to hack in all the macros for the proxy
    code)
 
-Install
--------
+In addition, following tools are used in building, testing, or
+generating documentation from the project sources.
 
-This module uses setuptools, so simply run
+-  `Setuptools <http://pythonhosted.org/setuptools/>`__
+-  `Coverage.py <http://nedbatchelder.com/code/coverage/>`__
+-  `GNU Make <http://www.gnu.org/software/make/>`__
+-  `Pandoc <http://johnmacfarlane.net/pandoc/>`__
+-  `Sphinx <http://sphinx-doc.org/>`__
 
-::
+These are all available in most linux distributions (eg.
+`Fedora <http://fedoraproject.org/>`__), and for OSX via
+`MacPorts <http://www.macports.org/>`__.
 
-    python setup.py install
+Building
+--------
+
+This module uses `setuptools <http://pythonhosted.org/setuptools/>`__,
+so simply run the following to build the project.
+
+.. code:: bash
+
+    python setup.py build
+
+Testing
+~~~~~~~
+
+Tests are written as ``unittest`` test cases. If you'd like to run the
+tests, simply invoke:
+
+.. code:: bash
+
+    python setup.py test
+
+You may check code coverage via
+`coverage.py <http://nedbatchelder.com/code/coverage/>`__, invoked as:
+
+.. code:: bash
+
+    # generates coverage data in .coverage
+    coverage run --source=promises setup.py test
+
+    # creates an html report from the above in htmlcov/index.html
+    coverage html
+
+I've setup `travis-ci <https://travis-ci.org>`__ and
+`coveralls.io <https://coveralls.io>`__ for this project, so tests are
+run automatically, and coverage is computed then. Results are available
+online:
+
+-  `python-promises on
+   Travis-CI <https://travis-ci.org/obriencj/python-promises>`__
+-  `python-promises on
+   Coveralls.io <https://coveralls.io/r/obriencj/python-promises>`__
+
+Documentation
+~~~~~~~~~~~~~
+
+Documentation is built using `Sphinx <http://sphinx-doc.org/>`__.
+Invoking the following will produce HTML documentation in the
+``docs/_build/html`` directory.
+
+.. code:: bash
+
+    cd docs
+    make html
+
+Note that you will need the following installed to successfully build
+the documentation:
+
+Documentation is `also available
+online <http://obriencj.preoccupied.net/python-promises/>`__.
 
 Related
 -------
@@ -204,10 +267,13 @@ wavelengths of this concept. Here are some for your perusal.
 -  `promised <https://code.google.com/p/promised/>`__ - Python "promise"
    for output of asynchronous operations, and callback chaining.
 
-Contact
--------
+Author
+------
 
 Christopher O'Brien obriencj@gmail.com
+
+If this project interests you, you can read about more of my hacks and
+ideas on `on my blog <http://obriencj.preoccupied.net>`__.
 
 License
 -------
