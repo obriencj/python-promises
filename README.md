@@ -86,15 +86,45 @@ will not be considered as delivered. In the case of a transient issue
 (such as a time-out), delivery can be attempted again until an answer
 is finally returned.
 
+```
+>>> from promises import lazy, is_delivered, deliver
+>>> A = lazy(set, [1, 2, 3])
+>>> is_delivered(A)
+False
+>>> print A
+<promises.Container undelivered>
+>>> deliver(A)
+set([1, 2, 3])
+>>> print A
+<promises.Container delivered>
+>>> is_delivered(A)
+True
+```
+
 
 ## Lazy Proxy
 
-Proxies are a way to write promises without *looking* like you're
-writing promises. You treat the proxy as though it were the answer
+Proxies are a way to consume promises without *looking* like you're
+consuming promises. You treat the proxy as though it were the answer
 itself. A proxy is created by invoking the `lazy_proxy` function, and
-passing a nullary work function as the single argument. If your work
+passing a work function and any arguments it needs. If your work
 delivers an int, then treat the proxy like an int. If your work
 delivers a dictionary, then treat the proxy like it were a dictionary.
+
+```
+>>> from promises import lazy_proxy, is_delivered, promise_repr
+>>> B = lazy_proxy(set, [1, 2, 3])
+>>> is_delivered(B)
+False
+>>> print promise_repr(B)
+<promises.Proxy undelivered>
+>>> print B
+set([1, 2, 3])
+>>> print promise_repr(B)
+<promises.Proxy delivered>
+>>> is_delivered(B)
+True
+```
 
 
 ### Proxy Problems
@@ -135,6 +165,27 @@ True
 [richcompare]: http://docs.python.org/2/c-api/typeobj.html#PyTypeObject.tp_richcompare
 
 [set_richcompare]: http://hg.python.org/cpython/file/779de7b4909b/Objects/setobject.c#l1794
+
+
+## Broken Promises
+
+The default behavior of `deliver` on a promise will allow any raised
+exception to propagate up. This may be undesireable, so there are
+three ways to instead gather a `BrokenPromise` which will wrap any
+raised exception and be returned as the result.
+
+The functions `breakable` and `breakable_proxy` will create a
+container and proxy promise (respectively) for a piece of work. These
+functions wrap the work in a try/except clause to catch any
+exceptions. A promise created with these functions way will be
+considered delivered but broken should it raise during delivery, and
+will not re-attempt delivery.
+
+The function `breakable_deliver` attempts delivery on a promise
+generated from `lazy` or `lazy_proxy`. If the promise raises during
+delivery, a `BrokenPromise` is generated and returned. However, the
+promise will not be considered delivered, and any future attempts at
+delivery will execute the work.
 
 
 ## Requirements
