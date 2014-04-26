@@ -74,8 +74,8 @@ documentation</a></li>
 GitHub</a></li>
 <li>python-promises not on PyPI until version 1.0.0</li>
 </ul>
-<div class="section" id="these-python-promises">
-<h2>These Python Promises<a class="headerlink" href="#these-python-promises" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="using-promises">
+<h2>Using promises<a class="headerlink" href="#using-promises" title="Permalink to this headline">¶</a></h2>
 <p><em>This is very much a work in progress. I am still working out how much I
 want to explain, in what order, etc. It may be best to just expect that
 everyone knows what a promise is and not explain anything at all... -
@@ -127,7 +127,7 @@ finally returned.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">deliver</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
 <span class="go">set([1, 2, 3])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">A</span>
-<span class="go">&lt;promises.Container delivered&gt;</span>
+<span class="go">&lt;promises.Container delivered:set([1, 2, 3])&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">is_delivered</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
@@ -150,7 +150,7 @@ a dictionary, then treat the proxy like it were a dictionary.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">B</span>
 <span class="go">set([1, 2, 3])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">promise_repr</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
-<span class="go">&lt;promises.Proxy delivered&gt;</span>
+<span class="go">&lt;promises.Proxy delivered:set([1, 2, 3])&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">is_delivered</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
@@ -216,12 +216,66 @@ cause the work to be executed again.</p>
 unless someone else wants to hack in all the macros for the proxy
 code)</li>
 </ul>
+<p>In addition, following tools are used in building, testing, or
+generating documentation from the project sources.</p>
+<ul class="simple">
+<li><a class="reference external" href="http://pythonhosted.org/setuptools/">Setuptools</a></li>
+<li><a class="reference external" href="http://nedbatchelder.com/code/coverage/">Coverage.py</a></li>
+<li><a class="reference external" href="http://www.gnu.org/software/make/">GNU Make</a></li>
+<li><a class="reference external" href="http://johnmacfarlane.net/pandoc/">Pandoc</a></li>
+<li><a class="reference external" href="http://sphinx-doc.org/">Sphinx</a></li>
+</ul>
+<p>These are all available in most linux distributions (eg.
+<a class="reference external" href="http://fedoraproject.org/">Fedora</a>), and for OSX via
+<a class="reference external" href="http://www.macports.org/">MacPorts</a>.</p>
 </div>
-<div class="section" id="install">
-<h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
-<p>This module uses setuptools, so simply run</p>
-<div class="highlight-python"><div class="highlight"><pre>python setup.py install
+<div class="section" id="building">
+<h2>Building<a class="headerlink" href="#building" title="Permalink to this headline">¶</a></h2>
+<p>This module uses <a class="reference external" href="http://pythonhosted.org/setuptools/">setuptools</a>,
+so simply run the following to build the project.</p>
+<div class="code bash highlight-python"><div class="highlight"><pre>python setup.py build
 </pre></div>
+</div>
+<div class="section" id="testing">
+<h3>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h3>
+<p>Tests are written as <tt class="docutils literal"><span class="pre">unittest</span></tt> test cases. If you&#8217;d like to run the
+tests, simply invoke:</p>
+<div class="code bash highlight-python"><div class="highlight"><pre>python setup.py test
+</pre></div>
+</div>
+<p>You may check code coverage via
+<a class="reference external" href="http://nedbatchelder.com/code/coverage/">coverage.py</a>, invoked as:</p>
+<div class="code bash highlight-python"><div class="highlight"><pre># generates coverage data in .coverage
+coverage run --source=promises setup.py test
+
+# creates an html report from the above in htmlcov/index.html
+coverage html
+</pre></div>
+</div>
+<p>I&#8217;ve setup <a class="reference external" href="https://travis-ci.org">travis-ci</a> and
+<a class="reference external" href="https://coveralls.io">coveralls.io</a> for this project, so tests are
+run automatically, and coverage is computed then. Results are available
+online:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://travis-ci.org/obriencj/python-promises">python-promises on
+Travis-CI</a></li>
+<li><a class="reference external" href="https://coveralls.io/r/obriencj/python-promises">python-promises on
+Coveralls.io</a></li>
+</ul>
+</div>
+<div class="section" id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h3>
+<p>Documentation is built using <a class="reference external" href="http://sphinx-doc.org/">Sphinx</a>.
+Invoking the following will produce HTML documentation in the
+<tt class="docutils literal"><span class="pre">docs/_build/html</span></tt> directory.</p>
+<div class="code bash highlight-python"><div class="highlight"><pre>cd docs
+make html
+</pre></div>
+</div>
+<p>Note that you will need the following installed to successfully build
+the documentation:</p>
+<p>Documentation is <a class="reference external" href="http://obriencj.preoccupied.net/python-promises/">also available
+online</a>.</p>
 </div>
 </div>
 <div class="section" id="related">
@@ -240,9 +294,11 @@ specification in Python</li>
 for output of asynchronous operations, and callback chaining.</li>
 </ul>
 </div>
-<div class="section" id="contact">
-<h2>Contact<a class="headerlink" href="#contact" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="author">
+<h2>Author<a class="headerlink" href="#author" title="Permalink to this headline">¶</a></h2>
 <p>Christopher O&#8217;Brien <a class="reference external" href="mailto:obriencj&#37;&#52;&#48;gmail&#46;com">obriencj<span>&#64;</span>gmail<span>&#46;</span>com</a></p>
+<p>If this project interests you, you can read about more of my hacks and
+ideas on <a class="reference external" href="http://obriencj.preoccupied.net">on my blog</a>.</p>
 </div>
 <div class="section" id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
@@ -268,7 +324,7 @@ along with this library; if not, see <a class="reference external" href="http://
   <h3><a href="../">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Overview of python-promises</a><ul>
-<li><a class="reference internal" href="#these-python-promises">These Python Promises</a><ul>
+<li><a class="reference internal" href="#using-promises">Using promises</a><ul>
 <li><a class="reference internal" href="#lazy-container">Lazy Container</a></li>
 <li><a class="reference internal" href="#lazy-proxy">Lazy Proxy</a></li>
 <li><a class="reference internal" href="#proxy-problems">Proxy Problems</a></li>
@@ -276,9 +332,13 @@ along with this library; if not, see <a class="reference external" href="http://
 </ul>
 </li>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
-<li><a class="reference internal" href="#install">Install</a></li>
+<li><a class="reference internal" href="#building">Building</a><ul>
+<li><a class="reference internal" href="#testing">Testing</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#related">Related</a></li>
-<li><a class="reference internal" href="#contact">Contact</a></li>
+<li><a class="reference internal" href="#author">Author</a></li>
 <li><a class="reference internal" href="#license">License</a></li>
 </ul>
 </li>
