@@ -61,7 +61,7 @@ acceptable for there to be no attempt to execute the underlying work.
 Put another way, promises are not the same as tasks.
 
 Lazy Container
---------------
+~~~~~~~~~~~~~~
 
 A lazy container is a simple, object-oriented placeholder. It can be
 created by invoking the ``lazy`` function, passing a work function and
@@ -89,7 +89,7 @@ finally returned.
     True
 
 Lazy Proxy
-----------
+~~~~~~~~~~
 
 Proxies are a way to consume promises without *looking* like you're
 consuming promises. You treat the proxy as though it were the answer
@@ -151,7 +151,7 @@ equal.
     True
 
 Broken Promises
----------------
+~~~~~~~~~~~~~~~
 
 The default behavior of ``deliver`` on a promise will allow any raised
 exception to propagate up. This may be undesireable, so there are three
@@ -161,15 +161,16 @@ exception and be returned as the result.
 The functions ``breakable`` and ``breakable_proxy`` will create a
 container and proxy promise (respectively) for a piece of work. These
 functions wrap the work in a try/except clause to catch any exceptions.
-A promise created with these functions way will be considered delivered
-but broken should it raise during delivery, and will not re-attempt
+A promise created with these functions will be considered delivered but
+broken should it raise during delivery, and will not re-attempt
 delivery.
 
-The function ``breakable_deliver`` attempts delivery on a promise
-generated from ``lazy`` or ``lazy_proxy``. If the promise raises during
-delivery, a ``BrokenPromise`` is generated and returned. However, the
-promise will not be considered delivered, and any future attempts at
-delivery will execute the work.
+As an alternative to creating a breakable promise, the function
+``breakable_deliver`` attempts delivery on a promise generated from
+``lazy`` or ``lazy_proxy``. If the promise raises during delivery, a
+``BrokenPromise`` is generated and returned. However, the promise will
+not be considered delivered, and any future attempts at delivery will
+cause the work to be executed again.
 
 Requirements
 ------------

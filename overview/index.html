@@ -107,9 +107,8 @@ piece of computation will be delivered <em>if asked for</em>. As such, if no
 code ever attempts to retrieve a promised value, it&#8217;s perfectly
 acceptable for there to be no attempt to execute the underlying work.
 Put another way, promises are not the same as tasks.</p>
-</div>
 <div class="section" id="lazy-container">
-<h2>Lazy Container<a class="headerlink" href="#lazy-container" title="Permalink to this headline">¶</a></h2>
+<h3>Lazy Container<a class="headerlink" href="#lazy-container" title="Permalink to this headline">¶</a></h3>
 <p>A lazy container is a simple, object-oriented placeholder. It can be
 created by invoking the <tt class="docutils literal"><span class="pre">lazy</span></tt> function, passing a work function and
 any arguments it needs. When delivered, the container will call that
@@ -135,7 +134,7 @@ finally returned.</p>
 </div>
 </div>
 <div class="section" id="lazy-proxy">
-<h2>Lazy Proxy<a class="headerlink" href="#lazy-proxy" title="Permalink to this headline">¶</a></h2>
+<h3>Lazy Proxy<a class="headerlink" href="#lazy-proxy" title="Permalink to this headline">¶</a></h3>
 <p>Proxies are a way to consume promises without <em>looking</em> like you&#8217;re
 consuming promises. You treat the proxy as though it were the answer
 itself. A proxy is created by invoking the <tt class="docutils literal"><span class="pre">lazy_proxy</span></tt> function, and
@@ -155,6 +154,7 @@ a dictionary, then treat the proxy like it were a dictionary.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">is_delivered</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
+</div>
 </div>
 <div class="section" id="proxy-problems">
 <h3>Proxy Problems<a class="headerlink" href="#proxy-problems" title="Permalink to this headline">¶</a></h3>
@@ -189,9 +189,8 @@ equal.</p>
 </pre></div>
 </div>
 </div>
-</div>
 <div class="section" id="broken-promises">
-<h2>Broken Promises<a class="headerlink" href="#broken-promises" title="Permalink to this headline">¶</a></h2>
+<h3>Broken Promises<a class="headerlink" href="#broken-promises" title="Permalink to this headline">¶</a></h3>
 <p>The default behavior of <tt class="docutils literal"><span class="pre">deliver</span></tt> on a promise will allow any raised
 exception to propagate up. This may be undesireable, so there are three
 ways to instead gather a <tt class="docutils literal"><span class="pre">BrokenPromise</span></tt> which will wrap any raised
@@ -199,14 +198,16 @@ exception and be returned as the result.</p>
 <p>The functions <tt class="docutils literal"><span class="pre">breakable</span></tt> and <tt class="docutils literal"><span class="pre">breakable_proxy</span></tt> will create a
 container and proxy promise (respectively) for a piece of work. These
 functions wrap the work in a try/except clause to catch any exceptions.
-A promise created with these functions way will be considered delivered
-but broken should it raise during delivery, and will not re-attempt
+A promise created with these functions will be considered delivered but
+broken should it raise during delivery, and will not re-attempt
 delivery.</p>
-<p>The function <tt class="docutils literal"><span class="pre">breakable_deliver</span></tt> attempts delivery on a promise
-generated from <tt class="docutils literal"><span class="pre">lazy</span></tt> or <tt class="docutils literal"><span class="pre">lazy_proxy</span></tt>. If the promise raises during
-delivery, a <tt class="docutils literal"><span class="pre">BrokenPromise</span></tt> is generated and returned. However, the
-promise will not be considered delivered, and any future attempts at
-delivery will execute the work.</p>
+<p>As an alternative to creating a breakable promise, the function
+<tt class="docutils literal"><span class="pre">breakable_deliver</span></tt> attempts delivery on a promise generated from
+<tt class="docutils literal"><span class="pre">lazy</span></tt> or <tt class="docutils literal"><span class="pre">lazy_proxy</span></tt>. If the promise raises during delivery, a
+<tt class="docutils literal"><span class="pre">BrokenPromise</span></tt> is generated and returned. However, the promise will
+not be considered delivered, and any future attempts at delivery will
+cause the work to be executed again.</p>
+</div>
 </div>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -267,13 +268,13 @@ along with this library; if not, see <a class="reference external" href="http://
   <h3><a href="../">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Overview of python-promises</a><ul>
-<li><a class="reference internal" href="#these-python-promises">These Python Promises</a></li>
+<li><a class="reference internal" href="#these-python-promises">These Python Promises</a><ul>
 <li><a class="reference internal" href="#lazy-container">Lazy Container</a></li>
-<li><a class="reference internal" href="#lazy-proxy">Lazy Proxy</a><ul>
+<li><a class="reference internal" href="#lazy-proxy">Lazy Proxy</a></li>
 <li><a class="reference internal" href="#proxy-problems">Proxy Problems</a></li>
+<li><a class="reference internal" href="#broken-promises">Broken Promises</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#broken-promises">Broken Promises</a></li>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#install">Install</a></li>
 <li><a class="reference internal" href="#related">Related</a></li>

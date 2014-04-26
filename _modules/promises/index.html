@@ -162,13 +162,14 @@
 
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">work</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_work</span>
         <span class="n">answer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_answer</span>
-        <span class="k">if</span> <span class="n">answer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">work</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="s">&quot;&lt;promises.Container undelivered&gt;&quot;</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">answer</span><span class="p">,</span> <span class="n">BrokenPromise</span><span class="p">):</span>
             <span class="k">return</span> <span class="s">&quot;&lt;promises.Container broken&gt;&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s">&quot;&lt;promises.Container delivered&gt;&quot;</span>
+            <span class="k">return</span> <span class="s">&quot;&lt;promises.Container delivered:</span><span class="si">%r</span><span class="s">&gt;&quot;</span> <span class="o">%</span> <span class="n">answer</span>
 
 
 <div class="viewcode-block" id="is_promise"><a class="viewcode-back" href="../../promises/#promises.is_promise">[docs]</a><span class="k">def</span> <span class="nf">is_promise</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
@@ -387,7 +388,7 @@
     <span class="k">return</span> <span class="n">_promise</span><span class="p">(</span><span class="n">Proxy</span><span class="p">,</span> <span class="n">blocking</span><span class="o">=</span><span class="n">blocking</span><span class="p">)</span>
 
 </div>
-<span class="k">class</span> <span class="nc">BrokenPromise</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="BrokenPromise"><a class="viewcode-back" href="../../promises/#promises.BrokenPromise">[docs]</a><span class="k">class</span> <span class="nc">BrokenPromise</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Result indicating a promise was broken. See the `breakable_lazy`,</span>
 <span class="sd">    `breakable_proxy`, and `breakable_deliver` functions for more</span>
@@ -416,7 +417,7 @@
     <span class="c">#     else:</span>
     <span class="c">#         return ret</span>
 
-
+</div>
 <span class="k">def</span> <span class="nf">_breakable_work</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">work</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
@@ -427,7 +428,7 @@
     <span class="k">return</span> <span class="n">result</span>
 
 
-<span class="k">def</span> <span class="nf">breakable</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<div class="viewcode-block" id="breakable"><a class="viewcode-back" href="../../promises/#promises.breakable">[docs]</a><span class="k">def</span> <span class="nf">breakable</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates a container promise to perform work. If delivery of the</span>
 <span class="sd">    work raises an Exception, a BrokenPromise instance is created to</span>
@@ -442,8 +443,8 @@
 
     <span class="k">return</span> <span class="n">lazy</span><span class="p">(</span><span class="n">_breakable_work</span><span class="p">,</span> <span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">breakable_proxy</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="breakable_proxy"><a class="viewcode-back" href="../../promises/#promises.breakable_proxy">[docs]</a><span class="k">def</span> <span class="nf">breakable_proxy</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates a proxy promise to perform work. If delivery of the work</span>
 <span class="sd">    raises an Exception, a BrokenPromise instance is created to wrap</span>
@@ -458,8 +459,8 @@
 
     <span class="k">return</span> <span class="n">lazy_proxy</span><span class="p">(</span><span class="n">_breakable_work</span><span class="p">,</span> <span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">breakable_deliver</span><span class="p">(</span><span class="n">on_promise</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="breakable_deliver"><a class="viewcode-back" href="../../promises/#promises.breakable_deliver">[docs]</a><span class="k">def</span> <span class="nf">breakable_deliver</span><span class="p">(</span><span class="n">on_promise</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Attempts to deliver on a promise. If delivery raises an Exception,</span>
 <span class="sd">    it is caught and the exc_info is stored into a BrokenPromise</span>
@@ -480,8 +481,8 @@
         <span class="n">result</span> <span class="o">=</span> <span class="n">BrokenPromise</span><span class="p">(</span><span class="n">reason</span><span class="o">=</span><span class="n">exc_info</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">result</span>
 
-
-<span class="k">def</span> <span class="nf">promise_repr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="promise_repr"><a class="viewcode-back" href="../../promises/#promises.promise_repr">[docs]</a><span class="k">def</span> <span class="nf">promise_repr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Representation of a promise. If the promise is undelivered, will</span>
 <span class="sd">    not deliver on it. If it is delivered, will deliver to check if</span>
@@ -499,11 +500,11 @@
         <span class="k">return</span> <span class="s">&quot;&lt;promises.Proxy broken&gt;&quot;</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s">&quot;&lt;promises.Proxy delivered&gt;&quot;</span>
+        <span class="k">return</span> <span class="s">&quot;&lt;promises.Proxy delivered:</span><span class="si">%r</span><span class="s">&gt;&quot;</span> <span class="o">%</span> <span class="n">deliver</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 
 
 <span class="c">#</span>
-<span class="c"># The end.</span>
+<span class="c"># The end.</span></div>
 </pre></div>
 
           </div>

@@ -111,6 +111,37 @@ raised here.</p>
 <dd><p>True if <cite>obj</cite> is a promise (either a proxy or a container)</p>
 </dd></dl>
 
+<dl class="function">
+<dt id="promises.promise_repr">
+<tt class="descclassname">promises.</tt><tt class="descname">promise_repr</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="../_modules/promises/#promise_repr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.promise_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Representation of a promise. If the promise is undelivered, will
+not deliver on it. If it is delivered, will deliver to check if
+the delivery indicates that the promise was broken.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="promises.breakable_deliver">
+<tt class="descclassname">promises.</tt><tt class="descname">breakable_deliver</tt><big>(</big><em>on_promise</em><big>)</big><a class="reference internal" href="../_modules/promises/#breakable_deliver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.breakable_deliver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempts to deliver on a promise. If delivery raises an Exception,
+it is caught and the exc_info is stored into a BrokenPromise
+instance which is returned in lieu of a normal result.</p>
+<p>Note that this can be called on any lazy or container promise, not
+just those that were created as breakable via the <cite>breakable_lazy</cite>
+and <cite>breakable_proxy</cite> functions.</p>
+<p>Using this function to deliver on a promise will not change the
+behavior of whether it is considered delivered or not when an
+Exception is raised.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="promises.BrokenPromise">
+<em class="property">class </em><tt class="descclassname">promises.</tt><tt class="descname">BrokenPromise</tt><big>(</big><em>reason=None</em><big>)</big><a class="reference internal" href="../_modules/promises/#BrokenPromise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.BrokenPromise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Result indicating a promise was broken. See the <cite>breakable_lazy</cite>,
+<cite>breakable_proxy</cite>, and <cite>breakable_deliver</cite> functions for more
+information.</p>
+</dd></dl>
+
 <dl class="class">
 <dt id="promises.PromiseAlreadyDelivered">
 <em class="property">class </em><tt class="descclassname">promises.</tt><tt class="descname">PromiseAlreadyDelivered</tt><a class="reference internal" href="../_modules/promises/#PromiseAlreadyDelivered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.PromiseAlreadyDelivered" title="Permalink to this definition">¶</a></dt>
@@ -160,6 +191,19 @@ delivery function hasn&#8217;t been called.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="function">
+<dt id="promises.breakable">
+<tt class="descclassname">promises.</tt><tt class="descname">breakable</tt><big>(</big><em>work</em>, <em>*args</em>, <em>**kwds</em><big>)</big><a class="reference internal" href="../_modules/promises/#breakable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.breakable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a container promise to perform work. If delivery of the
+work raises an Exception, a BrokenPromise instance is created to
+wrap the exc_info and is returned in lieu of a result.</p>
+<p>Unlike the normal promise created by <cite>lazy_proxy</cite>, raising an
+Exception in the work will result in the promise being considered
+delivered, but broken. Further attempts at delivery will not
+re-execute the work, but will return the BrokenPromise instance
+from the first failure.</p>
 </dd></dl>
 
 <dl class="function">
@@ -233,6 +277,19 @@ setter or seterr functions.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="function">
+<dt id="promises.breakable_proxy">
+<tt class="descclassname">promises.</tt><tt class="descname">breakable_proxy</tt><big>(</big><em>work</em>, <em>*args</em>, <em>**kwds</em><big>)</big><a class="reference internal" href="../_modules/promises/#breakable_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.breakable_proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a proxy promise to perform work. If delivery of the work
+raises an Exception, a BrokenPromise instance is created to wrap
+the exc_info and is returned in lieu of a result.</p>
+<p>Unlike the normal promise created by <cite>lazy</cite>, raising an Exception
+in the work will result in the promise being considered delivered,
+but broken. Further attempts at delivery will not re-execute the
+work, but will return the BrokenPromise instance from the first
+failure.</p>
 </dd></dl>
 
 <dl class="function">
