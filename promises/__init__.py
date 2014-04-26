@@ -110,13 +110,14 @@ class Container(object):
 
 
     def __repr__(self):
+        work = self._work
         answer = self._answer
-        if answer is None:
+        if work is not None:
             return "<promises.Container undelivered>"
         elif isinstance(answer, BrokenPromise):
             return "<promises.Container broken>"
         else:
-            return "<promises.Container delivered>"
+            return "<promises.Container delivered:%r>" % answer
 
 
 def is_promise(obj):
@@ -447,7 +448,7 @@ def promise_repr(p):
         return "<promises.Proxy broken>"
 
     else:
-        return "<promises.Proxy delivered>"
+        return "<promises.Proxy delivered:%r>" % deliver(p)
 
 
 #

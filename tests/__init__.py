@@ -179,7 +179,7 @@ class TestContainer(unittest.TestCase):
 
         deliver(promised)
 
-        self.assertEqual("<promises.Container delivered>",
+        self.assertEqual("<promises.Container delivered:5>",
                          promise_repr(promised))
 
         promised = self.breakable(born_to_fail)
@@ -332,7 +332,7 @@ class TestProxy(TestContainer):
 
         deliver(promised)
 
-        self.assertEqual("<promises.Proxy delivered>",
+        self.assertEqual("<promises.Proxy delivered:5>",
                          promise_repr(promised))
 
         promised = self.breakable(born_to_fail)
