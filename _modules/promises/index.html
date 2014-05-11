@@ -330,8 +330,8 @@
 
 <div class="viewcode-block" id="promise"><a class="viewcode-back" href="../../promises/#promises.promise">[docs]</a><span class="k">def</span> <span class="nf">promise</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns a tuple of a new Container, a unary function to deliver a</span>
-<span class="sd">    value into that promise, and a ternary function to feed an</span>
+<span class="sd">    Returns a tuple of a new `Container`, a unary function to deliver</span>
+<span class="sd">    a value into that promise, and a ternary function to feed an</span>
 <span class="sd">    exception to the promise.</span>
 
 <span class="sd">    If `blocking` is True, then any attempt to deliver on the promise</span>
@@ -360,7 +360,7 @@
 </div>
 <div class="viewcode-block" id="promise_proxy"><a class="viewcode-back" href="../../promises/#promises.promise_proxy">[docs]</a><span class="k">def</span> <span class="nf">promise_proxy</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns a tuple of a new Proxy, a unary function to deliver a</span>
+<span class="sd">    Returns a tuple of a new `Proxy`, a unary function to deliver a</span>
 <span class="sd">    value into that promise, and a ternary function to feed an</span>
 <span class="sd">    exception to the promise.</span>
 
@@ -396,49 +396,41 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reason : `sys.exc_info()` or `None`</span>
+<span class="sd">          the underlying reason that the promise was broken, which should</span>
+<span class="sd">          be an exc_info triplet or unspecified</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">reason</span> <span class="o">=</span> <span class="n">reason</span>
-        <span class="c"># self._retry = retry</span>
-
-
-    <span class="c"># def retry(self):</span>
-    <span class="c">#     &quot;&quot;&quot;</span>
-    <span class="c">#     If this broken promise was created with a callable retry value,</span>
-    <span class="c">#     attempts to call and returns the result. If retry was</span>
-    <span class="c">#     specified but was non-callable, returns retry. If retry was</span>
-    <span class="c">#     not specified, or was None, returns self (the BrokenPromise</span>
-    <span class="c">#     instance).</span>
-    <span class="c">#     &quot;&quot;&quot;</span>
-    <span class="c">#</span>
-    <span class="c">#     ret = self._retry</span>
-    <span class="c">#     if ret is None:</span>
-    <span class="c">#         return self</span>
-    <span class="c">#     elif callable(ret):</span>
-    <span class="c">#         return ret()</span>
-    <span class="c">#     else:</span>
-    <span class="c">#         return ret</span>
 
 </div>
 <span class="k">def</span> <span class="nf">_breakable_work</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    wrapper function for work to create a BrokenPromise if it fails</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">try</span><span class="p">:</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">work</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-        <span class="c">#retry = partial(work, *args, **kwds)</span>
-        <span class="c">#result = BrokenPromise(reason=exc_info(), retry=retry)</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">BrokenPromise</span><span class="p">(</span><span class="n">reason</span><span class="o">=</span><span class="n">exc_info</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">result</span>
 
 
 <div class="viewcode-block" id="breakable"><a class="viewcode-back" href="../../promises/#promises.breakable">[docs]</a><span class="k">def</span> <span class="nf">breakable</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Creates a container promise to perform work. If delivery of the</span>
-<span class="sd">    work raises an Exception, a BrokenPromise instance is created to</span>
-<span class="sd">    wrap the exc_info and is returned in lieu of a result.</span>
+<span class="sd">    Creates a `Container` promise to perform `work`. If delivery of</span>
+<span class="sd">    the work raises an `Exception`, a `BrokenPromise` instance is</span>
+<span class="sd">    created to wrap the `sys.exc_info()` and is returned in lieu of a</span>
+<span class="sd">    result.</span>
 
-<span class="sd">    Unlike the normal promise created by `lazy_proxy`, raising an</span>
-<span class="sd">    Exception in the work will result in the promise being considered</span>
-<span class="sd">    delivered, but broken. Further attempts at delivery will not</span>
-<span class="sd">    re-execute the work, but will return the BrokenPromise instance</span>
-<span class="sd">    from the first failure.</span>
+<span class="sd">    Unlike a promise created by `lazy_proxy`, raising an `Exception`</span>
+<span class="sd">    in the work will result in the promise being considered delivered,</span>
+<span class="sd">    but broken. Further attempts at delivery will not re-execute the</span>
+<span class="sd">    work, but will return the `BrokenPromise` instance from the first</span>
+<span class="sd">    failure.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="n">lazy</span><span class="p">(</span><span class="n">_breakable_work</span><span class="p">,</span> <span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
@@ -446,14 +438,14 @@
 </div>
 <div class="viewcode-block" id="breakable_proxy"><a class="viewcode-back" href="../../promises/#promises.breakable_proxy">[docs]</a><span class="k">def</span> <span class="nf">breakable_proxy</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Creates a proxy promise to perform work. If delivery of the work</span>
-<span class="sd">    raises an Exception, a BrokenPromise instance is created to wrap</span>
-<span class="sd">    the exc_info and is returned in lieu of a result.</span>
+<span class="sd">    Creates a `Proxy` promise to perform `work`. If delivery of the</span>
+<span class="sd">    work raises an `Exception`, a `BrokenPromise` instance is created</span>
+<span class="sd">    to wrap the `sys.exc_info()` and is returned in lieu of a result.</span>
 
-<span class="sd">    Unlike the normal promise created by `lazy`, raising an Exception</span>
-<span class="sd">    in the work will result in the promise being considered delivered,</span>
-<span class="sd">    but broken. Further attempts at delivery will not re-execute the</span>
-<span class="sd">    work, but will return the BrokenPromise instance from the first</span>
+<span class="sd">    Unlike a promise created by `lazy`, raising an `Exception` in the</span>
+<span class="sd">    work will result in the promise being considered delivered, but</span>
+<span class="sd">    broken. Further attempts at delivery will not re-execute the work,</span>
+<span class="sd">    but will return the `BrokenPromise` instance from the first</span>
 <span class="sd">    failure.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -462,17 +454,33 @@
 </div>
 <div class="viewcode-block" id="breakable_deliver"><a class="viewcode-back" href="../../promises/#promises.breakable_deliver">[docs]</a><span class="k">def</span> <span class="nf">breakable_deliver</span><span class="p">(</span><span class="n">on_promise</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Attempts to deliver on a promise. If delivery raises an Exception,</span>
-<span class="sd">    it is caught and the exc_info is stored into a BrokenPromise</span>
-<span class="sd">    instance which is returned in lieu of a normal result.</span>
+<span class="sd">    Attempts to deliver on a promise. If delivery raises an</span>
+<span class="sd">    `Exception`, it is caught and the `sys.exc_info()` is stored into</span>
+<span class="sd">    a `BrokenPromise` instance which is returned in lieu of a normal</span>
+<span class="sd">    result.</span>
 
-<span class="sd">    Note that this can be called on any lazy or container promise, not</span>
-<span class="sd">    just those that were created as breakable via the `breakable_lazy`</span>
-<span class="sd">    and `breakable_proxy` functions.</span>
+<span class="sd">    This can be called on any `Proxy` or `Container`, not just those</span>
+<span class="sd">    that were created as breakable via the `breakable_lazy` and</span>
+<span class="sd">    `breakable_proxy` functions.</span>
 
 <span class="sd">    Using this function to deliver on a promise will not change the</span>
 <span class="sd">    behavior of whether it is considered delivered or not when an</span>
-<span class="sd">    Exception is raised.</span>
+<span class="sd">    `Exception` is raised.</span>
+
+<span class="sd">    Only subclasses of `Exception` are caught -- `BaseException`</span>
+<span class="sd">    instances are considered too important to be caught this way.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    on_promise : `Proxy` or `Container` promise</span>
+<span class="sd">      the promise to deliver on</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value</span>
+<span class="sd">      the promised work if it could be successfully computed, or a</span>
+<span class="sd">      BrokenPromise instance wrapping any Exception that may have been</span>
+<span class="sd">      raised while attempting delivery</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -482,25 +490,35 @@
     <span class="k">return</span> <span class="n">result</span>
 
 </div>
-<div class="viewcode-block" id="promise_repr"><a class="viewcode-back" href="../../promises/#promises.promise_repr">[docs]</a><span class="k">def</span> <span class="nf">promise_repr</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+<div class="viewcode-block" id="promise_repr"><a class="viewcode-back" href="../../promises/#promises.promise_repr">[docs]</a><span class="k">def</span> <span class="nf">promise_repr</span><span class="p">(</span><span class="n">of_promise</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Representation of a promise. If the promise is undelivered, will</span>
 <span class="sd">    not deliver on it. If it is delivered, will deliver to check if</span>
 <span class="sd">    the delivery indicates that the promise was broken.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    of_promise : `Proxy` or `Container`</span>
+<span class="sd">      the promise to represent</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : str</span>
+<span class="sd">      text representation of the promise</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_proxy</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_proxy</span><span class="p">(</span><span class="n">of_promise</span><span class="p">):</span>
         <span class="c"># non-promises and container promises just get a normal repr</span>
-        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="n">of_promise</span><span class="p">)</span>
 
-    <span class="k">elif</span> <span class="ow">not</span> <span class="n">is_delivered</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">is_delivered</span><span class="p">(</span><span class="n">of_promise</span><span class="p">):</span>
         <span class="k">return</span> <span class="s">&quot;&lt;promises.Proxy undelivered&gt;&quot;</span>
 
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">breakable_deliver</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">BrokenPromise</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">breakable_deliver</span><span class="p">(</span><span class="n">of_promise</span><span class="p">),</span> <span class="n">BrokenPromise</span><span class="p">):</span>
         <span class="k">return</span> <span class="s">&quot;&lt;promises.Proxy broken&gt;&quot;</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s">&quot;&lt;promises.Proxy delivered:</span><span class="si">%r</span><span class="s">&gt;&quot;</span> <span class="o">%</span> <span class="n">deliver</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s">&quot;&lt;promises.Proxy delivered:</span><span class="si">%r</span><span class="s">&gt;&quot;</span> <span class="o">%</span> <span class="n">deliver</span><span class="p">(</span><span class="n">of_promise</span><span class="p">)</span>
 
 
 <span class="c">#</span>

@@ -113,24 +113,65 @@ raised here.</p>
 
 <dl class="function">
 <dt id="promises.promise_repr">
-<tt class="descclassname">promises.</tt><tt class="descname">promise_repr</tt><big>(</big><em>p</em><big>)</big><a class="reference internal" href="../_modules/promises/#promise_repr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.promise_repr" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">promises.</tt><tt class="descname">promise_repr</tt><big>(</big><em>of_promise</em><big>)</big><a class="reference internal" href="../_modules/promises/#promise_repr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.promise_repr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Representation of a promise. If the promise is undelivered, will
 not deliver on it. If it is delivered, will deliver to check if
 the delivery indicates that the promise was broken.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>of_promise</strong> : <cite>Proxy</cite> or <cite>Container</cite></p>
+<blockquote>
+<div><p>the promise to represent</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>value</strong> : str</p>
+<blockquote class="last">
+<div><p>text representation of the promise</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="promises.breakable_deliver">
 <tt class="descclassname">promises.</tt><tt class="descname">breakable_deliver</tt><big>(</big><em>on_promise</em><big>)</big><a class="reference internal" href="../_modules/promises/#breakable_deliver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.breakable_deliver" title="Permalink to this definition">¶</a></dt>
-<dd><p>Attempts to deliver on a promise. If delivery raises an Exception,
-it is caught and the exc_info is stored into a BrokenPromise
-instance which is returned in lieu of a normal result.</p>
-<p>Note that this can be called on any lazy or container promise, not
-just those that were created as breakable via the <cite>breakable_lazy</cite>
-and <cite>breakable_proxy</cite> functions.</p>
+<dd><p>Attempts to deliver on a promise. If delivery raises an
+<cite>Exception</cite>, it is caught and the <cite>sys.exc_info()</cite> is stored into
+a <cite>BrokenPromise</cite> instance which is returned in lieu of a normal
+result.</p>
+<p>This can be called on any <cite>Proxy</cite> or <cite>Container</cite>, not just those
+that were created as breakable via the <cite>breakable_lazy</cite> and
+<cite>breakable_proxy</cite> functions.</p>
 <p>Using this function to deliver on a promise will not change the
 behavior of whether it is considered delivered or not when an
-Exception is raised.</p>
+<cite>Exception</cite> is raised.</p>
+<p>Only subclasses of <cite>Exception</cite> are caught &#8211; <cite>BaseException</cite>
+instances are considered too important to be caught this way.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>on_promise</strong> : <cite>Proxy</cite> or <cite>Container</cite> promise</p>
+<blockquote>
+<div><p>the promise to deliver on</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>value</strong> :</p>
+<blockquote class="last">
+<div><p>the promised work if it could be successfully computed, or a
+BrokenPromise instance wrapping any Exception that may have been
+raised while attempting delivery</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="class">
@@ -196,21 +237,22 @@ delivery function hasn&#8217;t been called.</p>
 <dl class="function">
 <dt id="promises.breakable">
 <tt class="descclassname">promises.</tt><tt class="descname">breakable</tt><big>(</big><em>work</em>, <em>*args</em>, <em>**kwds</em><big>)</big><a class="reference internal" href="../_modules/promises/#breakable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.breakable" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a container promise to perform work. If delivery of the
-work raises an Exception, a BrokenPromise instance is created to
-wrap the exc_info and is returned in lieu of a result.</p>
-<p>Unlike the normal promise created by <cite>lazy_proxy</cite>, raising an
-Exception in the work will result in the promise being considered
-delivered, but broken. Further attempts at delivery will not
-re-execute the work, but will return the BrokenPromise instance
-from the first failure.</p>
+<dd><p>Creates a <cite>Container</cite> promise to perform <cite>work</cite>. If delivery of
+the work raises an <cite>Exception</cite>, a <cite>BrokenPromise</cite> instance is
+created to wrap the <cite>sys.exc_info()</cite> and is returned in lieu of a
+result.</p>
+<p>Unlike a promise created by <cite>lazy_proxy</cite>, raising an <cite>Exception</cite>
+in the work will result in the promise being considered delivered,
+but broken. Further attempts at delivery will not re-execute the
+work, but will return the <cite>BrokenPromise</cite> instance from the first
+failure.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="promises.promise">
 <tt class="descclassname">promises.</tt><tt class="descname">promise</tt><big>(</big><em>blocking=False</em><big>)</big><a class="reference internal" href="../_modules/promises/#promise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.promise" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a tuple of a new Container, a unary function to deliver a
-value into that promise, and a ternary function to feed an
+<dd><p>Returns a tuple of a new <cite>Container</cite>, a unary function to deliver
+a value into that promise, and a ternary function to feed an
 exception to the promise.</p>
 <p>If <cite>blocking</cite> is True, then any attempt to deliver on the promise
 will block until/unless a value or exception has been set via the
@@ -282,20 +324,20 @@ setter or seterr functions.</p>
 <dl class="function">
 <dt id="promises.breakable_proxy">
 <tt class="descclassname">promises.</tt><tt class="descname">breakable_proxy</tt><big>(</big><em>work</em>, <em>*args</em>, <em>**kwds</em><big>)</big><a class="reference internal" href="../_modules/promises/#breakable_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.breakable_proxy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a proxy promise to perform work. If delivery of the work
-raises an Exception, a BrokenPromise instance is created to wrap
-the exc_info and is returned in lieu of a result.</p>
-<p>Unlike the normal promise created by <cite>lazy</cite>, raising an Exception
-in the work will result in the promise being considered delivered,
-but broken. Further attempts at delivery will not re-execute the
-work, but will return the BrokenPromise instance from the first
+<dd><p>Creates a <cite>Proxy</cite> promise to perform <cite>work</cite>. If delivery of the
+work raises an <cite>Exception</cite>, a <cite>BrokenPromise</cite> instance is created
+to wrap the <cite>sys.exc_info()</cite> and is returned in lieu of a result.</p>
+<p>Unlike a promise created by <cite>lazy</cite>, raising an <cite>Exception</cite> in the
+work will result in the promise being considered delivered, but
+broken. Further attempts at delivery will not re-execute the work,
+but will return the <cite>BrokenPromise</cite> instance from the first
 failure.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="promises.promise_proxy">
 <tt class="descclassname">promises.</tt><tt class="descname">promise_proxy</tt><big>(</big><em>blocking=False</em><big>)</big><a class="reference internal" href="../_modules/promises/#promise_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#promises.promise_proxy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a tuple of a new Proxy, a unary function to deliver a
+<dd><p>Returns a tuple of a new <cite>Proxy</cite>, a unary function to deliver a
 value into that promise, and a ternary function to feed an
 exception to the promise.</p>
 <p>If <cite>blocking</cite> is True, then any attempt to deliver on the promise
