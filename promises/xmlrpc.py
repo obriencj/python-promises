@@ -72,9 +72,7 @@ class LazyMultiCall(object):
         self.__mclist = list()
         self.__mc = None
         self.__counter = 0
-
-        group_calls = int(group_calls)
-        self.__group_calls = group_calls if group_calls > 0 else 0
+        self.__group_calls = max(0, int(group_calls))
 
 
     def __enter__(self):
