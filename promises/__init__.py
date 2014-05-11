@@ -278,8 +278,8 @@ def _promise(promise_type, blocking=False):
 
 def promise(blocking=False):
     """
-    Returns a tuple of a new Container, a unary function to deliver a
-    value into that promise, and a ternary function to feed an
+    Returns a tuple of a new `Container`, a unary function to deliver
+    a value into that promise, and a ternary function to feed an
     exception to the promise.
 
     If `blocking` is True, then any attempt to deliver on the promise
@@ -308,7 +308,7 @@ def promise(blocking=False):
 
 def promise_proxy(blocking=False):
     """
-    Returns a tuple of a new Proxy, a unary function to deliver a
+    Returns a tuple of a new `Proxy`, a unary function to deliver a
     value into that promise, and a ternary function to feed an
     exception to the promise.
 
@@ -344,49 +344,41 @@ class BrokenPromise(object):
     """
 
     def __init__(self, reason=None):
+        """
+        Parameters
+        ----------
+        reason : `sys.exc_info()` or `None`
+          the underlying reason that the promise was broken, which should
+          be an exc_info triplet or unspecified
+        """
+
         self.reason = reason
-        # self._retry = retry
-
-
-    # def retry(self):
-    #     """
-    #     If this broken promise was created with a callable retry value,
-    #     attempts to call and returns the result. If retry was
-    #     specified but was non-callable, returns retry. If retry was
-    #     not specified, or was None, returns self (the BrokenPromise
-    #     instance).
-    #     """
-    #
-    #     ret = self._retry
-    #     if ret is None:
-    #         return self
-    #     elif callable(ret):
-    #         return ret()
-    #     else:
-    #         return ret
 
 
 def _breakable_work(work, *args, **kwds):
+    """
+    wrapper function for work to create a BrokenPromise if it fails
+    """
+
     try:
         result = work(*args, **kwds)
     except Exception as ex:
-        #retry = partial(work, *args, **kwds)
-        #result = BrokenPromise(reason=exc_info(), retry=retry)
         result = BrokenPromise(reason=exc_info())
     return result
 
 
 def breakable(work, *args, **kwds):
     """
-    Creates a container promise to perform work. If delivery of the
-    work raises an Exception, a BrokenPromise instance is created to
-    wrap the exc_info and is returned in lieu of a result.
+    Creates a `Container` promise to perform `work`. If delivery of
+    the work raises an `Exception`, a `BrokenPromise` instance is
+    created to wrap the `sys.exc_info()` and is returned in lieu of a
+    result.
 
-    Unlike the normal promise created by `lazy_proxy`, raising an
-    Exception in the work will result in the promise being considered
-    delivered, but broken. Further attempts at delivery will not
-    re-execute the work, but will return the BrokenPromise instance
-    from the first failure.
+    Unlike a promise created by `lazy_proxy`, raising an `Exception`
+    in the work will result in the promise being considered delivered,
+    but broken. Further attempts at delivery will not re-execute the
+    work, but will return the `BrokenPromise` instance from the first
+    failure.
     """
 
     return lazy(_breakable_work, work, *args, **kwds)
@@ -394,14 +386,14 @@ def breakable(work, *args, **kwds):
 
 def breakable_proxy(work, *args, **kwds):
     """
-    Creates a proxy promise to perform work. If delivery of the work
-    raises an Exception, a BrokenPromise instance is created to wrap
-    the exc_info and is returned in lieu of a result.
+    Creates a `Proxy` promise to perform `work`. If delivery of the
+    work raises an `Exception`, a `BrokenPromise` instance is created
+    to wrap the `sys.exc_info()` and is returned in lieu of a result.
 
-    Unlike the normal promise created by `lazy`, raising an Exception
-    in the work will result in the promise being considered delivered,
-    but broken. Further attempts at delivery will not re-execute the
-    work, but will return the BrokenPromise instance from the first
+    Unlike a promise created by `lazy`, raising an `Exception` in the
+    work will result in the promise being considered delivered, but
+    broken. Further attempts at delivery will not re-execute the work,
+    but will return the `BrokenPromise` instance from the first
     failure.
     """
 
@@ -410,17 +402,33 @@ def breakable_proxy(work, *args, **kwds):
 
 def breakable_deliver(on_promise):
     """
-    Attempts to deliver on a promise. If delivery raises an Exception,
-    it is caught and the exc_info is stored into a BrokenPromise
-    instance which is returned in lieu of a normal result.
+    Attempts to deliver on a promise. If delivery raises an
+    `Exception`, it is caught and the `sys.exc_info()` is stored into
+    a `BrokenPromise` instance which is returned in lieu of a normal
+    result.
 
-    Note that this can be called on any lazy or container promise, not
-    just those that were created as breakable via the `breakable_lazy`
-    and `breakable_proxy` functions.
+    This can be called on any `Proxy` or `Container`, not just those
+    that were created as breakable via the `breakable_lazy` and
+    `breakable_proxy` functions.
 
     Using this function to deliver on a promise will not change the
     behavior of whether it is considered delivered or not when an
-    Exception is raised.
+    `Exception` is raised.
+
+    Only subclasses of `Exception` are caught -- `BaseException`
+    instances are considered too important to be caught this way.
+
+    Parameters
+    ----------
+    on_promise : `Proxy` or `Container` promise
+      the promise to deliver on
+
+    Returns
+    -------
+    value
+      the promised work if it could be successfully computed, or a
+      BrokenPromise instance wrapping any Exception that may have been
+      raised while attempting delivery
     """
 
     try:
@@ -430,25 +438,35 @@ def breakable_deliver(on_promise):
     return result
 
 
-def promise_repr(p):
+def promise_repr(of_promise):
     """
     Representation of a promise. If the promise is undelivered, will
     not deliver on it. If it is delivered, will deliver to check if
     the delivery indicates that the promise was broken.
+
+    Parameters
+    ----------
+    of_promise : `Proxy` or `Container`
+      the promise to represent
+
+    Returns
+    -------
+    value : str
+      text representation of the promise
     """
 
-    if not is_proxy(p):
+    if not is_proxy(of_promise):
         # non-promises and container promises just get a normal repr
-        return repr(p)
+        return repr(of_promise)
 
-    elif not is_delivered(p):
+    elif not is_delivered(of_promise):
         return "<promises.Proxy undelivered>"
 
-    elif isinstance(breakable_deliver(p), BrokenPromise):
+    elif isinstance(breakable_deliver(of_promise), BrokenPromise):
         return "<promises.Proxy broken>"
 
     else:
-        return "<promises.Proxy delivered:%r>" % deliver(p)
+        return "<promises.Proxy delivered:%r>" % deliver(of_promise)
 
 
 #
