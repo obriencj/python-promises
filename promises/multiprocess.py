@@ -21,11 +21,11 @@ Multi-process Promises for Python
 """
 
 
+from . import promise, promise_proxy
 from multiprocessing.pool import Pool
-from promises import promise, promise_proxy
 
 
-__all__ = ( 'ProcessExecutor', 'ProxyProcessExecutor' )
+__all__ = ('ProcessExecutor', 'ProxyProcessExecutor')
 
 
 def _perform_work(*args, **kwds):
@@ -116,7 +116,7 @@ class ProcessExecutor(object):
           result is available.
         """
 
-        promised,setter,seterr = self._promise()
+        promised, setter, seterr = self._promise()
 
         def callback(value):
             # value is collected as the result of the _perform_work
