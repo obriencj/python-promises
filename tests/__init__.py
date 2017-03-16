@@ -24,6 +24,7 @@ license: LGPL v.3
 import sys
 import unittest
 
+from itertools import izip
 from promises import *
 
 
@@ -260,7 +261,7 @@ class TestProxy(TestContainer):
         class DummyClass(object):
             pass
 
-        values = ( True, False,
+        values = ( True, False, None,
                    999, 9.99, "test string", u"unicode string",
                    (1, 2, 3), [1, 2, 3],
                    {"a":1,"b":2,"c":3},
@@ -268,9 +269,9 @@ class TestProxy(TestContainer):
                    xrange, xrange(0, 99),
                    lambda x: x+8 )
 
-        provs = [self.lazy(lambda:val) for val in values]
+        provs = (self.lazy(lambda:val) for val in values)
 
-        for val,prov in zip(values, provs):
+        for val,prov in izip(values, provs):
             self.assertEqual(prov, val)
             self.assertEqual(val, prov)
 
