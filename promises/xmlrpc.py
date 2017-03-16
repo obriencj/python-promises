@@ -28,11 +28,11 @@ Examples
 """
 
 
-from promises import lazy, lazy_proxy
+from . import lazy, lazy_proxy
 from xmlrpclib import MultiCall
 
 
-__all__ = ( 'LazyMultiCall', 'ProxyMultiCall' )
+__all__ = ('LazyMultiCall', 'ProxyMultiCall', )
 
 
 class LazyMultiCall(object):
