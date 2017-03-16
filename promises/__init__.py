@@ -25,21 +25,21 @@ wish someone smarter had worked on this.
 """
 
 
-from _proxy import Proxy
-from _proxy import is_proxy, is_proxy_delivered, deliver_proxy
+from ._proxy import Proxy
+from ._proxy import is_proxy, is_proxy_delivered, deliver_proxy
 from functools import partial
 from sys import exc_info
 from threading import Event
 
 
-__all__ = ( 'Container', 'Proxy', 'BrokenPromise',
-            'lazy', 'lazy_proxy',
-            'promise', 'promise_proxy',
-            'breakable', 'breakable_proxy',
-            'breakable_deliver',
-            'PromiseNotReady', 'PromiseAlreadyDelivered',
-            'is_promise', 'is_delivered', 'deliver',
-            'promise_repr', )
+__all__ = ('Container', 'Proxy', 'BrokenPromise',
+           'lazy', 'lazy_proxy',
+           'promise', 'promise_proxy',
+           'breakable', 'breakable_proxy',
+           'breakable_deliver',
+           'PromiseNotReady', 'PromiseAlreadyDelivered',
+           'is_promise', 'is_delivered', 'deliver',
+           'promise_repr', )
 
 
 class Container(object):
@@ -125,9 +125,9 @@ def is_promise(obj):
     True if `obj` is a promise (either a proxy or a container)
     """
 
-    return (is_proxy(obj) or \
-                (hasattr(obj, "is_delivered") and
-                 hasattr(obj, "deliver")))
+    return (is_proxy(obj) or
+            (hasattr(obj, "is_delivered") and
+             hasattr(obj, "deliver")))
 
 
 def is_delivered(a_promise):
@@ -362,7 +362,7 @@ def _breakable_work(work, *args, **kwds):
 
     try:
         result = work(*args, **kwds)
-    except Exception as ex:
+    except Exception:
         result = BrokenPromise(reason=exc_info())
     return result
 
@@ -433,7 +433,7 @@ def breakable_deliver(on_promise):
 
     try:
         result = deliver(on_promise)
-    except Exception as ex:
+    except Exception:
         result = BrokenPromise(reason=exc_info())
     return result
 
