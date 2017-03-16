@@ -28,37 +28,38 @@ license: LGPL v.3
 
 
 from setuptools import setup, Extension
-import multiprocessing
+import multiprocessing  # NOQA : tests needs this to be imported
 
 
-ext = [ Extension("promises._proxy", ["promises/proxy.c"]), ]
+ext = [Extension("promises._proxy", ["promises/proxy.c"]), ]
 
 
-setup( name = "promises",
-       version = "0.9.0",
+setup(name = "promises",
+      version = "0.9.0",
 
-       packages = [ "promises", ],
+      packages = ["promises", ],
 
-       ext_modules = ext,
+      ext_modules = ext,
 
-       test_suite = "tests",
+      test_suite = "tests",
 
-       # PyPI information
-       author = "Christopher O'Brien",
-       author_email = "obriencj@gmail.com",
-       url = "https://github.com/obriencj/python-promises",
-       license = "GNU Lesser General Public License",
+      # PyPI information
+      author = "Christopher O'Brien",
+      author_email = "obriencj@gmail.com",
+      url = "https://github.com/obriencj/python-promises",
+      license = "GNU Lesser General Public License",
 
-       description = "Promises, container and transparent, with"
-       " threading and multiprocessing support",
+      description = "Promises, container and transparent, with"
+      " threading and multiprocessing support",
 
-       provides = [ "promises" ],
-       requires = [],
-       platforms = [ "python2 >= 2.6" ],
+      provides = ["promises", ],
+      requires = [],
+      platforms = ["python2 >= 2.6", ],
 
-       classifiers = ["Intended Audience :: Developers",
-                      "Programming Language :: Python :: 2",
-                      "Topic :: Software Development"] )
+      classifiers = [
+          "Intended Audience :: Developers",
+          "Programming Language :: Python :: 2",
+          "Topic :: Software Development", ])
 
 
 #
