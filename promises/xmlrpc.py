@@ -18,6 +18,13 @@ XML RPC MultiCall Promises.
 
 :author: Christopher O'Brien  <obriencj@gmail.com>
 :license: LGPL v.3
+
+Examples
+--------
+>>> from xmlrpclib import Server
+>>> from promises.xmlrpc import LazyMultiCall
+>>>
+
 """
 
 
@@ -30,11 +37,11 @@ __all__ = ( 'LazyMultiCall', 'ProxyMultiCall' )
 
 class LazyMultiCall(object):
     """
-    A wrapper to xmlrpclib.MultiCall which allows the programmer to
+    A wrapper to `xmlrpclib.MultiCall` which allows the programmer to
     receive promises for the calls as they are written, rather than
     having to gather and distribute the results at the end. Forcing a
-    promise to deliver will also force this MultiCall to execute all
-    of its queued xmlrpc calls.
+    promise to deliver will also force this multicall to execute all
+    of its grouped xmlrpc calls.
 
     As with all lazy calls, if nothing requests delivery of the
     promised result, it is possible for the work to never be executed.
@@ -51,19 +58,16 @@ class LazyMultiCall(object):
     promises when exiting.
     """
 
-    def __promise__(self, work, *args, **kwds):
-        """
-        override to provide alternative promise implementations
-        """
-
-        return lazy(work, *args, **kwds)
-
 
     def __init__(self, server, group_calls=0):
         """
-        server is an xmlrpclib.Server instance. If group_calls is greater
-        than zero, it is the upper limit on how many promises will be
-        delivered at a time.
+        Parameters
+        ----------
+        server : `xmlrpclib.Server`
+          connection to xmlrpc server to send the multicall to
+        group_calls : `int`
+          number of virtual call promises to queue for delivery in a
+          single multicall. 0 for unlimited
         """
 
         # hide our members well, since MultiCall creates member calls
@@ -156,10 +160,18 @@ class LazyMultiCall(object):
         return mc()[index]
 
 
+    def __promise__(self, work, *args, **kwds):
+        """
+        override to provide alternative promise implementations
+        """
+
+        return lazy(work, *args, **kwds)
+
+
 class ProxyMultiCall(LazyMultiCall):
     """
-    A `LazyMultiCall` which will return `Proxy` instead of `Container`
-    style promises.
+    A `LazyMultiCall` whose virtual methods will return `Proxy`
+    instead of `Container` style promises.
     """
 
     def __promise__(self, work, *args, **kwds):
