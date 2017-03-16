@@ -21,12 +21,12 @@ Multi-thread Promises for Python
 """
 
 
-from multiprocessing.pool import ThreadPool
-from promises import promise_proxy
+from . import promise_proxy
 from .multiprocess import ProcessExecutor
+from multiprocessing.pool import ThreadPool
 
 
-__all__ = ( 'ThreadExecutor', 'ProxyThreadExecutor' )
+__all__ = ('ThreadExecutor', 'ProxyThreadExecutor', )
 
 
 class ThreadExecutor(ProcessExecutor):
